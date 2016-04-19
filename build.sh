@@ -8,6 +8,6 @@ function ci_lib() {
                -scheme "HexToColorTests" \
                -destination "platform=iOS Simulator,name=${NAME}" \
                -sdk iphonesimulator \
-               build test
+               test
 }
 ci_lib "iPhone 5"

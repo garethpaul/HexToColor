@@ -7,11 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7F4CF5E61D2761B700D58750 /* HexToColorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F4CF5E51D2761B700D58750 /* HexToColorTests.swift */; };
+		7F4CF5E81D2761B700D58750 /* HexToColor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 888DBD501C3ED14100FBE6DA /* HexToColor.framework */; };
 		888DBD541C3ED14100FBE6DA /* HexToColor.h in Headers */ = {isa = PBXBuildFile; fileRef = 888DBD531C3ED14100FBE6DA /* HexToColor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		888DBD5C1C3ED18B00FBE6DA /* Hex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 888DBD5B1C3ED18B00FBE6DA /* Hex.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7F4CF5E91D2761B700D58750 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 888DBD471C3ED14100FBE6DA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 888DBD4F1C3ED14100FBE6DA;
+			remoteInfo = HexToColor;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		7F4CF5E31D2761B700D58750 /* HexToColorTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HexToColorTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7F4CF5E51D2761B700D58750 /* HexToColorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexToColorTests.swift; sourceTree = "<group>"; };
+		7F4CF5E71D2761B700D58750 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		888DBD501C3ED14100FBE6DA /* HexToColor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = HexToColor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		888DBD531C3ED14100FBE6DA /* HexToColor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HexToColor.h; sourceTree = "<group>"; };
 		888DBD551C3ED14100FBE6DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -19,6 +34,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		7F4CF5E01D2761B700D58750 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F4CF5E81D2761B700D58750 /* HexToColor.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		888DBD4C1C3ED14100FBE6DA /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -29,10 +52,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7F4CF5E41D2761B700D58750 /* HexToColorTests */ = {
+			isa = PBXGroup;
+			children = (
+				7F4CF5E51D2761B700D58750 /* HexToColorTests.swift */,
+				7F4CF5E71D2761B700D58750 /* Info.plist */,
+			);
+			path = HexToColorTests;
+			sourceTree = "<group>";
+		};
 		888DBD461C3ED14100FBE6DA = {
 			isa = PBXGroup;
 			children = (
 				888DBD521C3ED14100FBE6DA /* HexToColor */,
+				7F4CF5E41D2761B700D58750 /* HexToColorTests */,
 				888DBD511C3ED14100FBE6DA /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				888DBD501C3ED14100FBE6DA /* HexToColor.framework */,
+				7F4CF5E31D2761B700D58750 /* HexToColorTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -69,6 +103,24 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		7F4CF5E21D2761B700D58750 /* HexToColorTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7F4CF5ED1D2761B700D58750 /* Build configuration list for PBXNativeTarget "HexToColorTests" */;
+			buildPhases = (
+				7F4CF5DF1D2761B700D58750 /* Sources */,
+				7F4CF5E01D2761B700D58750 /* Frameworks */,
+				7F4CF5E11D2761B700D58750 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7F4CF5EA1D2761B700D58750 /* PBXTargetDependency */,
+			);
+			name = HexToColorTests;
+			productName = HexToColorTests;
+			productReference = 7F4CF5E31D2761B700D58750 /* HexToColorTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		888DBD4F1C3ED14100FBE6DA /* HexToColor */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 888DBD581C3ED14100FBE6DA /* Build configuration list for PBXNativeTarget "HexToColor" */;
@@ -93,9 +145,13 @@
 		888DBD471C3ED14100FBE6DA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0730;
 				LastUpgradeCheck = 0720;
 				ORGANIZATIONNAME = GPJ;
 				TargetAttributes = {
+					7F4CF5E21D2761B700D58750 = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
 					888DBD4F1C3ED14100FBE6DA = {
 						CreatedOnToolsVersion = 7.2;
 					};
@@ -114,11 +170,19 @@
 			projectRoot = "";
 			targets = (
 				888DBD4F1C3ED14100FBE6DA /* HexToColor */,
+				7F4CF5E21D2761B700D58750 /* HexToColorTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		7F4CF5E11D2761B700D58750 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		888DBD4E1C3ED14100FBE6DA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -129,6 +193,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		7F4CF5DF1D2761B700D58750 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7F4CF5E61D2761B700D58750 /* HexToColorTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		888DBD4B1C3ED14100FBE6DA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -139,7 +211,41 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		7F4CF5EA1D2761B700D58750 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 888DBD4F1C3ED14100FBE6DA /* HexToColor */;
+			targetProxy = 7F4CF5E91D2761B700D58750 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		7F4CF5EB1D2761B700D58750 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				INFOPLIST_FILE = HexToColorTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.HexToColorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7F4CF5EC1D2761B700D58750 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				INFOPLIST_FILE = HexToColorTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.gpj.HexToColorTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		888DBD561C3ED14100FBE6DA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -267,6 +373,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		7F4CF5ED1D2761B700D58750 /* Build configuration list for PBXNativeTarget "HexToColorTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7F4CF5EB1D2761B700D58750 /* Debug */,
+				7F4CF5EC1D2761B700D58750 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
 		888DBD4A1C3ED14100FBE6DA /* Build configuration list for PBXProject "HexToColor" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -283,6 +397,7 @@
 				888DBD5A1C3ED14100FBE6DA /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

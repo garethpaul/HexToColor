@@ -8,6 +8,8 @@
 
 import XCTest
 
+@testable import HexToColor
+
 class HexToColorTests: XCTestCase {
     
     override func setUp() {
@@ -20,9 +22,12 @@ class HexToColorTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
+    func testWhite() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+        var color = toColor("#FFFFFF")
+        let white = UIColor(red: 255.0, green: 255.0, blue: 255.0, alpha: 1.0)
+        XCTAssert(color == white)
     }
     
     func testPerformanceExample() {

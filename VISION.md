@@ -34,6 +34,11 @@ Contribution rules:
 
 ## Security
 
+Canonical security policy and reporting:
+
+- [`SECURITY.md`](SECURITY.md)
+
+
 This utility has low security risk, but parsing should be deterministic and
 should not crash callers on malformed input.
 

@@ -1,5 +1,8 @@
 ## HexToColor Vision
 
+This document explains the current state and direction of the project.
+Project overview and developer docs: [`README.md`](README.md)
+
 HexToColor is a small iOS utility library that provides convenience methods for
 creating `UIColor` values from hex strings.
 

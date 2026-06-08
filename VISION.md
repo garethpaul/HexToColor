@@ -26,6 +26,7 @@ Current baseline:
 
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
 - The package exposes the conversion entry point as public `toColor(hex:)`.
+- Surrounding whitespace and newlines are trimmed before parsing.
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.

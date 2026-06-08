@@ -52,6 +52,7 @@ required_files = [
     "HexToColorTests/HexToColorTests.swift",
     "HexToColorTests/Info.plist",
     "docs/plans/2026-06-08-hextocolor-baseline.md",
+    "docs/plans/2026-06-08-hextocolor-whitespace-baseline.md",
 ]
 
 for required_file in required_files:
@@ -70,6 +71,7 @@ vision = read("VISION.md")
 changes = read("CHANGES.md")
 gitignore = read(".gitignore")
 plan = PLAN.read_text(errors="replace") if PLAN.exists() else ""
+whitespace_plan = read("docs/plans/2026-06-08-hextocolor-whitespace-baseline.md")
 
 require("public func toColor(hex: String) -> UIColor" in hex_source,
         "Hex parser must expose the documented public toColor API")
@@ -80,6 +82,7 @@ require("return UIColor.grayColor()" in hex_source,
 for test_name in [
     "testWhite",
     "testLowercaseWithoutHash",
+    "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
 ]:
@@ -90,14 +93,15 @@ require("IOS_DESTINATION" in read("build.sh") and "IOS_SIMULATOR_NAME" in read("
         "build.sh must support simulator destination overrides")
 require("https://twitter.com/gpj" in podspec,
         "podspec social URL must use HTTPS")
-require("make check" in readme and "invalid hex" in readme.lower(),
-        "README must document local checks and invalid hex fallback")
-require("make check" in vision and "invalid hex" in vision.lower(),
+require("make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower(),
+        "README must document local checks, trimming, and invalid hex fallback")
+require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower(),
         "VISION must describe the current baseline")
 require("public" in changes and "toColor(hex:)" in changes and
-        "scanHexInt" in changes and "make check" in changes,
+        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes,
         "CHANGES must record parser and check baseline work")
 require("status: completed" in plan, "baseline plan must be marked completed")
+require("status: completed" in whitespace_plan, "whitespace plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")
 

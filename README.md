@@ -76,4 +76,4 @@ Keep changes small and tied to the project that is already present in this repos
 
 Prior README summary:
 
-> [![Build Status](https://travis-ci.org/garethpaul/HexToColor.svg?branch=master)](https://travis-ci.org/garethpaul/HexToColor) HexToColor <!-- README-OVERVIEW-IMAGE --> Convenience Methods for UIColor
+> [![Build Status](https://travis-ci.org/garethpaul/HexToColor.svg?branch=master)](https://travis-ci.org/garethpaul/HexToColor) HexToColor Convenience Methods for UIColor

@@ -2,4 +2,7 @@
 
 # HexToColor
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 Convenience Methods for UIColor

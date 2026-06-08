@@ -37,7 +37,7 @@ Contribution rules:
 This utility has low security risk, but parsing should be deterministic and
 should not crash callers on malformed input.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Broad UI frameworks or unrelated color tooling
 - API-breaking changes without migration notes

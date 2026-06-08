@@ -71,6 +71,8 @@ changes = read("CHANGES.md")
 gitignore = read(".gitignore")
 plan = PLAN.read_text(errors="replace") if PLAN.exists() else ""
 
+require("public func toColor(hex: String) -> UIColor" in hex_source,
+        "Hex parser must expose the documented public toColor API")
 require("scanner.scanHexInt(&rgbValue)" in hex_source and "scanner.atEnd" in hex_source,
         "Hex parser must reject partially scanned invalid hex strings")
 require("return UIColor.grayColor()" in hex_source,
@@ -88,11 +90,12 @@ require("IOS_DESTINATION" in read("build.sh") and "IOS_SIMULATOR_NAME" in read("
         "build.sh must support simulator destination overrides")
 require("https://twitter.com/gpj" in podspec,
         "podspec social URL must use HTTPS")
-require("make check" in readme and "Invalid hex" in readme,
+require("make check" in readme and "invalid hex" in readme.lower(),
         "README must document local checks and invalid hex fallback")
 require("make check" in vision and "invalid hex" in vision.lower(),
         "VISION must describe the current baseline")
-require("scanHexInt" in changes and "make check" in changes,
+require("public" in changes and "toColor(hex:)" in changes and
+        "scanHexInt" in changes and "make check" in changes,
         "CHANGES must record parser and check baseline work")
 require("status: completed" in plan, "baseline plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:

@@ -10,7 +10,7 @@ import UIKit
 
 // Converts a hex string into a UIColor.
 //
-func toColor (hex:String) -> UIColor {
+public func toColor(hex: String) -> UIColor {
     var cString:String = hex.stringByTrimmingCharactersInSet(NSCharacterSet.whitespaceAndNewlineCharacterSet() as NSCharacterSet).uppercaseString
     
     if (cString.hasPrefix("#")) {

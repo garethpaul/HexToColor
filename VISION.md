@@ -20,10 +20,17 @@ Priority:
 - Keep podspec and Xcode project metadata aligned
 - Maintain test coverage for valid and invalid color inputs
 - Avoid adding broader color-system behavior without a clear need
+- Keep `make check` passing for static parser, podspec, plist, and build-script guardrails
+
+Current baseline:
+
+- Invalid hex strings, including partial `scanHexInt` parses, return gray.
+- Valid hash-prefixed and lowercase six-character values have focused tests.
+- `build.sh` supports simulator destination overrides for legacy Xcode tests.
+- Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
 
 Next priorities:
 
-- Document supported hex formats and failure behavior
 - Modernize Swift/project settings in a dedicated pass
 - Add tests for shorthand, alpha, case, and malformed strings if supported
 - Clarify package-manager support if revived

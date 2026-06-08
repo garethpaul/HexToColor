@@ -11,19 +11,23 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 
 ## Repository Contents
 
+- `CHANGES.md` - concise history of maintenance changes
+- `Makefile` - local verification entry point
 - `README.md` - project overview and local usage notes
 - `build.sh`
 - `HexToColor` - source or example code
 - `HexToColor.xcodeproj` - Xcode project file
 - `HexToColorTests` - source or example code
+- `HexToColor.podspec` - CocoaPods metadata
+- `scripts/check-baseline.py` - static parser and Xcode metadata checks
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
 
 - Source directories: HexToColor, HexToColorTests
-- Dependency and build manifests: none detected
-- Entry points or build surfaces: build.sh, HexToColor.xcodeproj
+- Dependency and build manifests: HexToColor.podspec
+- Entry points or build surfaces: Makefile, build.sh, HexToColor.xcodeproj
 - Test-looking files: HexToColorTests/HexToColorTests.swift, HexToColorTests/Info.plist
 
 ## Getting Started
@@ -49,7 +53,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
+- Run `make check` for static parser, plist, podspec, build-script, and Xcode project guardrails that do not require Xcode.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
+- Invalid hex strings fall back to `UIColor.grayColor()`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -65,6 +71,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 ## Maintenance Notes
 
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
+- Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` when `./build.sh` needs a simulator different from the legacy default.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 

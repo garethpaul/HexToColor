@@ -11,30 +11,34 @@ import XCTest
 @testable import HexToColor
 
 class HexToColorTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-    }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+    func assertColor(color: UIColor, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+        var actualRed: CGFloat = 0
+        var actualGreen: CGFloat = 0
+        var actualBlue: CGFloat = 0
+        var actualAlpha: CGFloat = 0
+
+        XCTAssertTrue(color.getRed(&actualRed, green: &actualGreen, blue: &actualBlue, alpha: &actualAlpha))
+        XCTAssertEqualWithAccuracy(red, actualRed, accuracy: 0.001)
+        XCTAssertEqualWithAccuracy(green, actualGreen, accuracy: 0.001)
+        XCTAssertEqualWithAccuracy(blue, actualBlue, accuracy: 0.001)
+        XCTAssertEqualWithAccuracy(alpha, actualAlpha, accuracy: 0.001)
     }
     
     func testWhite() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
         let color = toColor("#FFFFFF")
-        let white = UIColor(red: 255.0, green: 255.0, blue: 255.0, alpha: 1.0)
-        XCTAssert(color == white)
+        assertColor(color, red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testLowercaseWithoutHash() {
+        let color = toColor("00ff7f")
+        assertColor(color, red: 0.0, green: 1.0, blue: 127.0 / 255.0, alpha: 1.0)
     }
-    
+
+    func testInvalidLengthReturnsGray() {
+        assertColor(toColor("#FFF"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+    }
+
+    func testInvalidCharactersReturnGray() {
+        assertColor(toColor("#FFFFFG"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+    }
 }

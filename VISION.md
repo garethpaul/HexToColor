@@ -43,3 +43,6 @@ should not crash callers on malformed input.
 - API-breaking changes without migration notes
 - Package metadata changes without verification
 - Parser behavior changes without tests
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.

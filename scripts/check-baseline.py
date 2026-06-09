@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN = ROOT / "docs/plans/2026-06-08-hextocolor-baseline.md"
 SHORTHAND_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md"
 ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgba-alpha.md"
+SIGNED_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-signed-character-guard.md"
 
 
 def fail(message):
@@ -58,6 +59,7 @@ required_files = [
     "docs/plans/2026-06-08-hextocolor-zero-x-prefix.md",
     "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md",
     "docs/plans/2026-06-09-hextocolor-rgba-alpha.md",
+    "docs/plans/2026-06-09-hextocolor-signed-character-guard.md",
 ]
 
 for required_file in required_files:
@@ -80,11 +82,14 @@ whitespace_plan = read("docs/plans/2026-06-08-hextocolor-whitespace-baseline.md"
 zero_x_plan = read("docs/plans/2026-06-08-hextocolor-zero-x-prefix.md")
 shorthand_plan = SHORTHAND_PLAN.read_text(errors="replace") if SHORTHAND_PLAN.exists() else ""
 alpha_plan = ALPHA_PLAN.read_text(errors="replace") if ALPHA_PLAN.exists() else ""
+signed_plan = SIGNED_PLAN.read_text(errors="replace") if SIGNED_PLAN.exists() else ""
 
 require("public func toColor(hex: String) -> UIColor" in hex_source,
         "Hex parser must expose the documented public toColor API")
 require("scanner.scanHexInt(&rgbValue)" in hex_source and "scanner.atEnd" in hex_source,
         "Hex parser must reject partially scanned invalid hex strings")
+require("rangeOfCharacterFromSet" in hex_source and "invertedSet" in hex_source,
+        "Hex parser must explicitly reject non-hex characters before scanning")
 require('cString.hasPrefix("0X")' in hex_source and "advancedBy(2)" in hex_source,
         "Hex parser must strip 0x-prefixed RGB strings before length validation")
 require("cString.characters.count == 3" in hex_source and "expandedString.append(character)" in hex_source,
@@ -105,6 +110,7 @@ for test_name in [
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
+    "testSignedHexReturnsGray",
 ]:
     require(test_name in tests, f"missing color parser test: {test_name}")
 require("255.0, green: 255.0" not in tests,
@@ -115,16 +121,19 @@ require("https://twitter.com/gpj" in podspec,
         "podspec social URL must use HTTPS")
 require("make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower() and "shorthand" in readme.lower() and "alpha" in readme.lower(),
         "README must document local checks, trimming, alpha, and invalid hex fallback")
-require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower() and "alpha" in vision.lower(),
+require("non-hex" in readme.lower() and "signed" in readme.lower(),
+        "README must document explicit non-hex and signed-character fallback")
+require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower() and "alpha" in vision.lower() and "non-hex" in vision.lower(),
         "VISION must describe the current baseline")
 require("public" in changes and "toColor(hex:)" in changes and
-        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes and "alpha" in changes,
+        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes and "alpha" in changes and "non-hex" in changes,
         "CHANGES must record parser and check baseline work")
 require("status: completed" in plan, "baseline plan must be marked completed")
 require("status: completed" in whitespace_plan, "whitespace plan must be marked completed")
 require("status: completed" in zero_x_plan, "0x prefix plan must be marked completed")
 require("status: completed" in shorthand_plan, "shorthand plan must be marked completed")
 require("status: completed" in alpha_plan, "alpha plan must be marked completed")
+require("status: completed" in signed_plan, "signed-character plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")
 

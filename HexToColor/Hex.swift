@@ -33,6 +33,11 @@ public func toColor(hex: String) -> UIColor {
     if (cString.characters.count != 6 && cString.characters.count != 8) {
         return UIColor.grayColor()
     }
+
+    let allowedHexCharacters = NSCharacterSet(charactersInString: "0123456789ABCDEF")
+    if (cString.rangeOfCharacterFromSet(allowedHexCharacters.invertedSet) != nil) {
+        return UIColor.grayColor()
+    }
     
     var rgbValue:UInt32 = 0
     let scanner = NSScanner(string: cString)

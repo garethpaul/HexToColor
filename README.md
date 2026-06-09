@@ -58,7 +58,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The public Swift API is `toColor(hex:)`; surrounding whitespace is trimmed,
   `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, and `0xRRGGBB`
   values are supported, RGB alpha defaults to opaque, and invalid hex strings
-  fall back to `UIColor.grayColor()`.
+  fall back to `UIColor.grayColor()`. Signed or otherwise non-hex characters
+  are rejected before scanner conversion.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -80,6 +81,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.
 - See `docs/plans/2026-06-08-hextocolor-zero-x-prefix.md` for the current `0x` prefix parsing guardrail.
 - See `docs/plans/2026-06-09-hextocolor-rgb-shorthand.md` for the current shorthand parsing guardrail.
+- See `docs/plans/2026-06-09-hextocolor-signed-character-guard.md` for the current signed-character parsing guardrail.
 
 ## Contributing
 

@@ -6,6 +6,8 @@
   strings such as `#F0A`, while preserving gray fallback for malformed lengths.
 - Added parser support and focused coverage for RGBA alpha strings such as
   `#F0A8` and `#33669980`.
+- Rejected signed-looking and other non-hex characters before scanner
+  conversion so malformed values stay on the gray fallback path.
 
 ## 2026-06-08
 

@@ -20,7 +20,8 @@ Priority:
 - Keep podspec and Xcode project metadata aligned
 - Maintain test coverage for valid and invalid color inputs
 - Avoid adding broader color-system behavior without a clear need
-- Keep `make check` passing for static parser, podspec, plist, and build-script guardrails
+- Keep `make lint`, `make test`, `make build`, and `make check` passing for
+  static parser, podspec, plist, and build-script guardrails
 
 Current baseline:
 
@@ -40,6 +41,8 @@ Current baseline:
   scanner conversion.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
+- Local verification targets stay available while full Xcode execution needs a
+  macOS toolchain.
 
 Next priorities:
 

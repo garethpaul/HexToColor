@@ -13,6 +13,7 @@ SHORTHAND_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md"
 ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgba-alpha.md"
 SIGNED_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-signed-character-guard.md"
 HASH_ZERO_X_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md"
+MAKE_GATES_PLAN = ROOT / "docs/plans/2026-06-09-make-gate-aliases.md"
 
 
 def fail(message):
@@ -62,6 +63,7 @@ required_files = [
     "docs/plans/2026-06-09-hextocolor-rgba-alpha.md",
     "docs/plans/2026-06-09-hextocolor-signed-character-guard.md",
     "docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md",
+    "docs/plans/2026-06-09-make-gate-aliases.md",
 ]
 
 for required_file in required_files:
@@ -74,6 +76,7 @@ lint_plist("HexToColorTests/Info.plist")
 
 hex_source = read("HexToColor/Hex.swift")
 tests = read("HexToColorTests/HexToColorTests.swift")
+makefile = read("Makefile")
 podspec = read("HexToColor.podspec")
 readme = read("README.md")
 vision = read("VISION.md")
@@ -123,18 +126,20 @@ require("IOS_DESTINATION" in read("build.sh") and "IOS_SIMULATOR_NAME" in read("
         "build.sh must support simulator destination overrides")
 require("https://twitter.com/gpj" in podspec,
         "podspec social URL must use HTTPS")
-require("make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower() and "shorthand" in readme.lower() and "alpha" in readme.lower(),
+require(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile,
+        "Makefile must expose lint, test, build, and check gate targets")
+require("make lint" in readme and "make test" in readme and "make build" in readme and "make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower() and "shorthand" in readme.lower() and "alpha" in readme.lower(),
         "README must document local checks, trimming, alpha, and invalid hex fallback")
 require("#0x" in readme.lower(),
         "README must document hash-prefixed 0x normalization")
 require("non-hex" in readme.lower() and "signed" in readme.lower(),
         "README must document explicit non-hex and signed-character fallback")
-require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower() and "alpha" in vision.lower() and "non-hex" in vision.lower(),
+require("make lint" in vision and "make test" in vision and "make build" in vision and "make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower() and "alpha" in vision.lower() and "non-hex" in vision.lower(),
         "VISION must describe the current baseline")
 require("#0x" in vision.lower(),
         "VISION must describe hash-prefixed 0x normalization")
 require("public" in changes and "toColor(hex:)" in changes and
-        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes and "alpha" in changes and "non-hex" in changes,
+        "scanHexInt" in changes and "make lint" in changes and "make test" in changes and "make build" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes and "alpha" in changes and "non-hex" in changes,
         "CHANGES must record parser and check baseline work")
 require("#0x" in changes.lower(),
         "CHANGES must record hash-prefixed 0x coverage")
@@ -145,6 +150,8 @@ require("status: completed" in shorthand_plan, "shorthand plan must be marked co
 require("status: completed" in alpha_plan, "alpha plan must be marked completed")
 require("status: completed" in signed_plan, "signed-character plan must be marked completed")
 require("status: completed" in hash_zero_x_plan, "hash 0x prefix plan must be marked completed")
+make_gates_plan = MAKE_GATES_PLAN.read_text(errors="replace") if MAKE_GATES_PLAN.exists() else ""
+require("status: completed" in make_gates_plan, "Make gate alias plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")
 

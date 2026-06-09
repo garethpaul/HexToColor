@@ -2,6 +2,8 @@
 
 ## 2026-06-09
 
+- Added `make lint`, `make test`, and `make build` aliases so local verification
+  has the expected pre-push gate targets in addition to `make check`.
 - Added parser support and focused coverage for three-character RGB shorthand
   strings such as `#F0A`, while preserving gray fallback for malformed lengths.
 - Added parser support and focused coverage for RGBA alpha strings such as

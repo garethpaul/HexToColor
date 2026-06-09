@@ -20,6 +20,15 @@ public func toColor(hex: String) -> UIColor {
     if (cString.hasPrefix("0X")) {
         cString = cString.substringFromIndex(cString.startIndex.advancedBy(2))
     }
+
+    if (cString.characters.count == 3) {
+        var expandedString = ""
+        for character in cString.characters {
+            expandedString.append(character)
+            expandedString.append(character)
+        }
+        cString = expandedString
+    }
     
     if (cString.characters.count != 6) {
         return UIColor.grayColor()

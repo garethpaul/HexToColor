@@ -9,6 +9,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 PLAN = ROOT / "docs/plans/2026-06-08-hextocolor-baseline.md"
+SHORTHAND_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md"
 
 
 def fail(message):
@@ -54,6 +55,7 @@ required_files = [
     "docs/plans/2026-06-08-hextocolor-baseline.md",
     "docs/plans/2026-06-08-hextocolor-whitespace-baseline.md",
     "docs/plans/2026-06-08-hextocolor-zero-x-prefix.md",
+    "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md",
 ]
 
 for required_file in required_files:
@@ -74,6 +76,7 @@ gitignore = read(".gitignore")
 plan = PLAN.read_text(errors="replace") if PLAN.exists() else ""
 whitespace_plan = read("docs/plans/2026-06-08-hextocolor-whitespace-baseline.md")
 zero_x_plan = read("docs/plans/2026-06-08-hextocolor-zero-x-prefix.md")
+shorthand_plan = SHORTHAND_PLAN.read_text(errors="replace") if SHORTHAND_PLAN.exists() else ""
 
 require("public func toColor(hex: String) -> UIColor" in hex_source,
         "Hex parser must expose the documented public toColor API")
@@ -81,12 +84,15 @@ require("scanner.scanHexInt(&rgbValue)" in hex_source and "scanner.atEnd" in hex
         "Hex parser must reject partially scanned invalid hex strings")
 require('cString.hasPrefix("0X")' in hex_source and "advancedBy(2)" in hex_source,
         "Hex parser must strip 0x-prefixed RGB strings before length validation")
+require("cString.characters.count == 3" in hex_source and "expandedString.append(character)" in hex_source,
+        "Hex parser must expand three-character RGB shorthand")
 require("return UIColor.grayColor()" in hex_source,
         "Hex parser must keep the documented gray fallback")
 for test_name in [
     "testWhite",
     "testLowercaseWithoutHash",
     "testZeroXPrefix",
+    "testThreeDigitShorthand",
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
@@ -98,16 +104,17 @@ require("IOS_DESTINATION" in read("build.sh") and "IOS_SIMULATOR_NAME" in read("
         "build.sh must support simulator destination overrides")
 require("https://twitter.com/gpj" in podspec,
         "podspec social URL must use HTTPS")
-require("make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower(),
+require("make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower() and "shorthand" in readme.lower(),
         "README must document local checks, trimming, and invalid hex fallback")
-require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower(),
+require("make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower(),
         "VISION must describe the current baseline")
 require("public" in changes and "toColor(hex:)" in changes and
-        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes,
+        "scanHexInt" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes,
         "CHANGES must record parser and check baseline work")
 require("status: completed" in plan, "baseline plan must be marked completed")
 require("status: completed" in whitespace_plan, "whitespace plan must be marked completed")
 require("status: completed" in zero_x_plan, "0x prefix plan must be marked completed")
+require("status: completed" in shorthand_plan, "shorthand plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")
 

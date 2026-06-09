@@ -30,13 +30,15 @@ Current baseline:
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `0x`-prefixed six-character RGB values are supported without changing the
   invalid-input fallback.
+- Three-character RGB shorthand values are expanded before the existing
+  six-character validation path.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
 
 Next priorities:
 
 - Modernize Swift/project settings in a dedicated pass
-- Add tests for shorthand, alpha, case, and malformed strings if supported
+- Add tests for alpha, case, and malformed strings if supported
 - Clarify package-manager support if revived
 
 Contribution rules:

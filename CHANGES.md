@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-09
+
+- Added parser support and focused coverage for three-character RGB shorthand
+  strings such as `#F0A`, while preserving gray fallback for malformed lengths.
+
 ## 2026-06-08
 
 - Added `make check` for static Xcode, podspec, plist, and parser guardrails.

@@ -62,8 +62,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, and `0xRRGGBB`
   values are supported. `#0xRRGGBB` is normalized through the same RGB parsing
   path. RGB alpha defaults to opaque, and invalid hex strings fall back to
-  `UIColor.grayColor()`. Signed or otherwise non-hex characters are rejected
-  before scanner conversion.
+  `UIColor.grayColor()`. Unsupported lengths stay on the gray fallback path.
+  Signed or otherwise non-hex characters are rejected before scanner
+  conversion.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -88,6 +89,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `docs/plans/2026-06-09-hextocolor-signed-character-guard.md` for the current signed-character parsing guardrail.
 - See `docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md` for the current
   hash-prefixed `0x` normalization guardrail.
+- See `docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md` for
+  unsupported lengths now that RGBA shorthand is valid.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
 

@@ -37,6 +37,8 @@ Current baseline:
   six-character validation path.
 - Four-character RGBA shorthand and eight-character RGBA values preserve alpha
   while RGB values remain opaque by default.
+- Unsupported lengths still return gray now that four-character RGBA shorthand
+  is valid.
 - Non-hex characters, including signed-looking strings, are rejected before
   scanner conversion.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.

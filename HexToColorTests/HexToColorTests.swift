@@ -65,7 +65,9 @@ class HexToColorTests: XCTestCase {
     }
 
     func testInvalidLengthReturnsGray() {
-        assertColor(toColor("#FFFF"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+        assertColor(toColor("#FF"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+        assertColor(toColor("#FFFFF"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
+        assertColor(toColor("#FFFFFFFFF"), red: 0.5, green: 0.5, blue: 0.5, alpha: 1.0)
     }
 
     func testInvalidCharactersReturnGray() {

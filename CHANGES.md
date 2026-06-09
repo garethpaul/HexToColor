@@ -12,6 +12,8 @@
   conversion so malformed values stay on the gray fallback path.
 - Added explicit coverage and docs for `#0x`-prefixed RGB strings, which
   normalize through the same parser path as `0xRRGGBB`.
+- Updated invalid-length coverage to use unsupported lengths now that
+  four-character RGBA shorthand is valid.
 
 ## 2026-06-08
 

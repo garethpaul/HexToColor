@@ -28,6 +28,8 @@ Current baseline:
 - The package exposes the conversion entry point as public `toColor(hex:)`.
 - Surrounding whitespace and newlines are trimmed before parsing.
 - Valid hash-prefixed and lowercase six-character values have focused tests.
+- `0x`-prefixed six-character RGB values are supported without changing the
+  invalid-input fallback.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
 

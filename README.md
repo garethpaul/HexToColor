@@ -56,7 +56,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Run `make check` for static parser, plist, podspec, build-script, and Xcode project guardrails that do not require Xcode.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
 - The public Swift API is `toColor(hex:)`; surrounding whitespace is trimmed,
-  and invalid hex strings fall back to `UIColor.grayColor()`.
+  `#RRGGBB`, `RRGGBB`, and `0xRRGGBB` values are supported, and invalid hex
+  strings fall back to `UIColor.grayColor()`.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -76,6 +77,7 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.
+- See `docs/plans/2026-06-08-hextocolor-zero-x-prefix.md` for the current `0x` prefix parsing guardrail.
 
 ## Contributing
 

@@ -34,6 +34,11 @@ class HexToColorTests: XCTestCase {
         assertColor(color, red: 0.0, green: 1.0, blue: 127.0 / 255.0, alpha: 1.0)
     }
 
+    func testZeroXPrefix() {
+        let color = toColor("0x112233")
+        assertColor(color, red: 17.0 / 255.0, green: 34.0 / 255.0, blue: 51.0 / 255.0, alpha: 1.0)
+    }
+
     func testTrimsWhitespaceAndNewlines() {
         let color = toColor(" \n#336699\t")
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 1.0)

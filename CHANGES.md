@@ -7,4 +7,5 @@
 - Rejected partial `NSScanner.scanHexInt` parses so invalid hex strings return gray.
 - Replaced the placeholder performance test with focused valid and invalid hex parser tests.
 - Added parser coverage for whitespace and newline trimming.
+- Added parser support and coverage for `0x`-prefixed RGB strings.
 - Made `build.sh` POSIX-safe and configurable through Xcode destination environment variables.

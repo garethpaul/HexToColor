@@ -39,6 +39,11 @@ class HexToColorTests: XCTestCase {
         assertColor(color, red: 17.0 / 255.0, green: 34.0 / 255.0, blue: 51.0 / 255.0, alpha: 1.0)
     }
 
+    func testHashZeroXPrefix() {
+        let color = toColor("#0x112233")
+        assertColor(color, red: 17.0 / 255.0, green: 34.0 / 255.0, blue: 51.0 / 255.0, alpha: 1.0)
+    }
+
     func testThreeDigitShorthand() {
         let color = toColor("#F0A")
         assertColor(color, red: 1.0, green: 0.0, blue: 170.0 / 255.0, alpha: 1.0)

@@ -30,6 +30,8 @@ Current baseline:
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `0x`-prefixed six-character RGB values are supported without changing the
   invalid-input fallback.
+- `#0x`-prefixed six-character RGB values normalize through the same parsing
+  path after the hash prefix is stripped.
 - Three-character RGB shorthand values are expanded before the existing
   six-character validation path.
 - Four-character RGBA shorthand and eight-character RGBA values preserve alpha

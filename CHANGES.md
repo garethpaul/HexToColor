@@ -8,6 +8,8 @@
   `#F0A8` and `#33669980`.
 - Rejected signed-looking and other non-hex characters before scanner
   conversion so malformed values stay on the gray fallback path.
+- Added explicit coverage and docs for `#0x`-prefixed RGB strings, which
+  normalize through the same parser path as `0xRRGGBB`.
 
 ## 2026-06-08
 

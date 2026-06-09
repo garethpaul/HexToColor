@@ -32,13 +32,15 @@ Current baseline:
   invalid-input fallback.
 - Three-character RGB shorthand values are expanded before the existing
   six-character validation path.
+- Four-character RGBA shorthand and eight-character RGBA values preserve alpha
+  while RGB values remain opaque by default.
 - `build.sh` supports simulator destination overrides for legacy Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
 
 Next priorities:
 
 - Modernize Swift/project settings in a dedicated pass
-- Add tests for alpha, case, and malformed strings if supported
+- Add tests for additional case and malformed strings if supported
 - Clarify package-manager support if revived
 
 Contribution rules:

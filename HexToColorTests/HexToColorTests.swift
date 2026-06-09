@@ -44,6 +44,16 @@ class HexToColorTests: XCTestCase {
         assertColor(color, red: 17.0 / 255.0, green: 34.0 / 255.0, blue: 51.0 / 255.0, alpha: 1.0)
     }
 
+    func testZeroXFourDigitShorthandWithAlpha() {
+        let color = toColor("0xF0A8")
+        assertColor(color, red: 1.0, green: 0.0, blue: 170.0 / 255.0, alpha: 136.0 / 255.0)
+    }
+
+    func testHashZeroXEightDigitRGBAWithAlpha() {
+        let color = toColor("#0x33669980")
+        assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 128.0 / 255.0)
+    }
+
     func testThreeDigitShorthand() {
         let color = toColor("#F0A")
         assertColor(color, red: 1.0, green: 0.0, blue: 170.0 / 255.0, alpha: 1.0)

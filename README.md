@@ -59,12 +59,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the static baseline.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
 - The public Swift API is `toColor(hex:)`; surrounding whitespace is trimmed,
-  `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, and `0xRRGGBB`
-  values are supported. `#0xRRGGBB` is normalized through the same RGB parsing
-  path. RGB alpha defaults to opaque, and invalid hex strings fall back to
-  `UIColor.grayColor()`. Unsupported lengths stay on the gray fallback path.
-  Signed or otherwise non-hex characters are rejected before scanner
-  conversion.
+  `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, `0xRRGGBB`, and
+  `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized
+  through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
+  invalid hex strings fall back to `UIColor.grayColor()`. Unsupported lengths
+  stay on the gray fallback path. Signed or otherwise non-hex characters are
+  rejected before scanner conversion.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -91,6 +91,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   hash-prefixed `0x` normalization guardrail.
 - See `docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md` for
   unsupported lengths now that RGBA shorthand is valid.
+- See `docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md` for
+  prefixed shorthand and RGBA alpha coverage.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
 

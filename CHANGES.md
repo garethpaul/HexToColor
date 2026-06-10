@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-10
+
+- Added pinned macOS GitHub Actions validation for parser/source guardrails and
+  current-Xcode project parsing.
+
 ## 2026-06-09
 
 - Added coverage for prefixed shorthand and RGBA alpha forms such as `0xRGBA`

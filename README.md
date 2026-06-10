@@ -50,6 +50,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Open `HexToColor.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
 - Run `./build.sh` when the required platform toolchain is installed.
+- GitHub Actions runs `make check` on macOS and parses the Xcode project without
+  selecting the obsolete default simulator.
 
 ## Testing and Verification
 
@@ -79,6 +81,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
+- See `docs/plans/2026-06-10-hosted-project-validation.md` for the hosted Xcode
+  project parsing boundary.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` when `./build.sh` needs a simulator different from the legacy default.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.

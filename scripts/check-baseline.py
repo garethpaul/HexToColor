@@ -14,6 +14,7 @@ ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgba-alpha.md"
 SIGNED_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-signed-character-guard.md"
 HASH_ZERO_X_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md"
 MAKE_GATES_PLAN = ROOT / "docs/plans/2026-06-09-make-gate-aliases.md"
+CI_PLAN = ROOT / "docs/plans/2026-06-10-hosted-project-validation.md"
 INVALID_LENGTH_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md"
 PREFIXED_ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md"
 
@@ -49,10 +50,12 @@ required_files = [
     "SECURITY.md",
     "VISION.md",
     "build.sh",
+    ".github/workflows/check.yml",
     "HexToColor.podspec",
     "HexToColor.xcodeproj/project.pbxproj",
     "HexToColor.xcodeproj/xcshareddata/xcschemes/HexToColor.xcscheme",
     "HexToColor.xcodeproj/xcshareddata/xcschemes/HexToColorTests.xcscheme",
+    "docs/plans/2026-06-10-hosted-project-validation.md",
     "HexToColor/Hex.swift",
     "HexToColor/HexToColor.h",
     "HexToColor/Info.plist",
@@ -174,6 +177,15 @@ require("status: completed" in signed_plan, "signed-character plan must be marke
 require("status: completed" in hash_zero_x_plan, "hash 0x prefix plan must be marked completed")
 require("status: completed" in invalid_length_plan, "invalid length coverage plan must be marked completed")
 require("status: completed" in prefixed_alpha_plan, "prefixed alpha coverage plan must be marked completed")
+ci_plan = CI_PLAN.read_text(errors="replace") if CI_PLAN.exists() else ""
+require("status: completed" in ci_plan and "make check" in ci_plan,
+        "hosted project validation plan must be completed and record verification")
+workflow = read(".github/workflows/check.yml")
+require("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
+        "runs-on: macos-15" in workflow and "timeout-minutes: 10" in workflow and
+        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
+        "run: make check" in workflow,
+        "GitHub Actions must keep the bounded, least-privilege macOS project check")
 make_gates_plan = MAKE_GATES_PLAN.read_text(errors="replace") if MAKE_GATES_PLAN.exists() else ""
 require("status: completed" in make_gates_plan, "Make gate alias plan must be marked completed")
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:

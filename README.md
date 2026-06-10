@@ -66,7 +66,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
   invalid hex strings fall back to `UIColor.grayColor()`. Unsupported lengths
   stay on the gray fallback path. Signed or otherwise non-hex characters are
-  rejected before scanner conversion.
+  rejected before scanner conversion. Tests cover both `0x` and `#0x` prefixes
+  at shorthand and full RGBA widths.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -97,6 +98,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   unsupported lengths now that RGBA shorthand is valid.
 - See `docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md` for
   prefixed shorthand and RGBA alpha coverage.
+- See `docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md` for the complete
+  `0x`/`#0x` shorthand and full RGBA prefix matrix.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
 

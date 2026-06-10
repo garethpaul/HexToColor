@@ -28,6 +28,8 @@ Current baseline:
 - GitHub Actions runs the parser/source baseline and current-Xcode project
   listing on macOS; simulator tests remain explicit through `build.sh`.
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
+- Alpha parsing remains characterized for both accepted prefixes at shorthand
+  and full RGBA widths.
 - The package exposes the conversion entry point as public `toColor(hex:)`.
 - Surrounding whitespace and newlines are trimmed before parsing.
 - Valid hash-prefixed and lowercase six-character values have focused tests.

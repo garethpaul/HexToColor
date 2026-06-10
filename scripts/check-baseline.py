@@ -17,6 +17,7 @@ MAKE_GATES_PLAN = ROOT / "docs/plans/2026-06-09-make-gate-aliases.md"
 CI_PLAN = ROOT / "docs/plans/2026-06-10-hosted-project-validation.md"
 INVALID_LENGTH_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md"
 PREFIXED_ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md"
+PREFIX_ALPHA_MATRIX_PLAN = ROOT / "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md"
 
 
 def fail(message):
@@ -71,6 +72,7 @@ required_files = [
     "docs/plans/2026-06-09-make-gate-aliases.md",
     "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md",
     "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md",
+    "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md",
 ]
 
 for required_file in required_files:
@@ -98,6 +100,7 @@ signed_plan = SIGNED_PLAN.read_text(errors="replace") if SIGNED_PLAN.exists() el
 hash_zero_x_plan = HASH_ZERO_X_PLAN.read_text(errors="replace") if HASH_ZERO_X_PLAN.exists() else ""
 invalid_length_plan = INVALID_LENGTH_PLAN.read_text(errors="replace") if INVALID_LENGTH_PLAN.exists() else ""
 prefixed_alpha_plan = PREFIXED_ALPHA_PLAN.read_text(errors="replace") if PREFIXED_ALPHA_PLAN.exists() else ""
+prefix_alpha_matrix_plan = PREFIX_ALPHA_MATRIX_PLAN.read_text(errors="replace") if PREFIX_ALPHA_MATRIX_PLAN.exists() else ""
 
 require("public func toColor(hex: String) -> UIColor" in hex_source,
         "Hex parser must expose the documented public toColor API")
@@ -121,6 +124,8 @@ for test_name in [
     "testZeroXPrefix",
     "testHashZeroXPrefix",
     "testZeroXFourDigitShorthandWithAlpha",
+    "testZeroXEightDigitRGBAWithAlpha",
+    "testHashZeroXFourDigitShorthandWithAlpha",
     "testHashZeroXEightDigitRGBAWithAlpha",
     "testThreeDigitShorthand",
     "testFourDigitShorthandWithAlpha",
@@ -131,6 +136,9 @@ for test_name in [
     "testSignedHexReturnsGray",
 ]:
     require(test_name in tests, f"missing color parser test: {test_name}")
+for prefixed_alpha_input in ["0xF0A8", "0x33669980", "#0xF0A8", "#0x33669980"]:
+    require(f'toColor("{prefixed_alpha_input}")' in tests,
+            f"missing prefixed alpha input coverage: {prefixed_alpha_input}")
 require("255.0, green: 255.0" not in tests,
         "tests must compare UIColor components in the 0...1 range")
 require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and 'toColor("#FFFFF")' in tests and 'toColor("#FFFFFFFFF")' in tests,
@@ -177,6 +185,8 @@ require("status: completed" in signed_plan, "signed-character plan must be marke
 require("status: completed" in hash_zero_x_plan, "hash 0x prefix plan must be marked completed")
 require("status: completed" in invalid_length_plan, "invalid length coverage plan must be marked completed")
 require("status: completed" in prefixed_alpha_plan, "prefixed alpha coverage plan must be marked completed")
+require("status: completed" in prefix_alpha_matrix_plan and "make check" in prefix_alpha_matrix_plan,
+        "prefix alpha matrix plan must be completed and record verification")
 ci_plan = CI_PLAN.read_text(errors="replace") if CI_PLAN.exists() else ""
 require("status: completed" in ci_plan and "make check" in ci_plan,
         "hosted project validation plan must be completed and record verification")

@@ -2,6 +2,8 @@
 
 ## 2026-06-10
 
+- Completed the alpha parsing test matrix for `0x` and `#0x` prefixes at both
+  shorthand and full RGBA widths.
 - Added pinned macOS GitHub Actions validation for parser/source guardrails and
   current-Xcode project parsing.
 

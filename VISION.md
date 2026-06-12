@@ -35,7 +35,8 @@ Current baseline:
 - Alpha parsing remains characterized for both accepted prefixes at shorthand
   and full RGBA widths.
 - The package exposes public `toColor(_:)` and retains deprecated
-  `toColor(hex:)` compatibility for labeled callers.
+  `toColor(hex:)` compatibility for labeled callers, with the compatibility
+  path executed by hosted XCTest.
 - Surrounding whitespace and newlines are trimmed before parsing.
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `0x`-prefixed six-character RGB values are supported without changing the

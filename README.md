@@ -65,7 +65,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   for those checks plus the XCTest suite when Xcode is installed.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
 - The primary Swift API is `toColor(_:)`, with deprecated `toColor(hex:)`
-  compatibility for labeled callers. Surrounding whitespace is trimmed,
+  compatibility for labeled callers. Hosted XCTest executes the labeled path
+  against RGBA parsing so compatibility is not only checked statically.
+  Surrounding whitespace is trimmed,
   `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, `0xRRGGBB`, and
   `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized
   through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
@@ -110,6 +112,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   prefixed shorthand and RGBA alpha coverage.
 - See `docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md` for the complete
   `0x`/`#0x` shorthand and full RGBA prefix matrix.
+- See `docs/plans/2026-06-12-labeled-api-runtime-coverage.md` for executed
+  coverage of the deprecated labeled API.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
 

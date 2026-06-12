@@ -10,6 +10,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 PLAN_DIR = ROOT / "docs/plans"
 SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
+LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -110,6 +111,7 @@ required_files = [
     "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md",
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
+    LABELED_API_PLAN,
 ]
 
 for required_file in required_files:
@@ -172,6 +174,7 @@ for test_name in [
     "testThreeDigitShorthand",
     "testFourDigitShorthandWithAlpha",
     "testEightDigitRGBAWithAlpha",
+    "testDeprecatedLabeledAPICompatibility",
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
@@ -190,6 +193,8 @@ require("255.0, green: 255.0" not in tests,
 require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and
         'toColor("#FFFFF")' in tests and 'toColor("#FFFFFFFFF")' in tests,
         "invalid-length tests must use unsupported lengths")
+require('toColor(hex: "#33669980")' in tests,
+        "deprecated labeled API must be exercised by XCTest")
 
 require_all(build_script, [
     "set -eu",
@@ -256,6 +261,7 @@ completed_plans = [
     "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md",
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
+    LABELED_API_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),

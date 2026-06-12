@@ -2,6 +2,8 @@
 
 ## 2026-06-12
 
+- Added hosted XCTest coverage for the deprecated `toColor(hex:)` call shape
+  and verified that it delegates through full RGBA component parsing.
 - Migrated the parser and XCTest target from Swift 2-era syntax to Swift 5 while
   preserving unlabeled calls and a deprecated labeled compatibility wrapper.
 - Raised the Xcode project deployment floor to iOS 12 and made `build.sh`

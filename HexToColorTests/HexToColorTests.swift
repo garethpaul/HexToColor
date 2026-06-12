@@ -79,6 +79,11 @@ class HexToColorTests: XCTestCase {
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 128.0 / 255.0)
     }
 
+    func testDeprecatedLabeledAPICompatibility() {
+        let color = toColor(hex: "#33669980")
+        assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 128.0 / 255.0)
+    }
+
     func testTrimsWhitespaceAndNewlines() {
         let color = toColor(" \n#336699\t")
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 1.0)

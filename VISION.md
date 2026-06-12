@@ -25,12 +25,17 @@ Priority:
 
 Current baseline:
 
-- GitHub Actions runs the parser/source baseline and current-Xcode project
-  listing on macOS; simulator tests remain explicit through `build.sh`.
+- GitHub Actions runs the parser/source baseline and real XCTest suite on macOS
+  through `make test`; simulator selection remains configurable through
+  `build.sh`.
+- Framework and test targets use Swift 5 with an iOS 12 deployment floor.
+- CocoaPods compatibility metadata matches Swift 5 and iOS 12 while release
+  versioning remains unchanged until a future tag.
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
 - Alpha parsing remains characterized for both accepted prefixes at shorthand
   and full RGBA widths.
-- The package exposes the conversion entry point as public `toColor(hex:)`.
+- The package exposes public `toColor(_:)` and retains deprecated
+  `toColor(hex:)` compatibility for labeled callers.
 - Surrounding whitespace and newlines are trimmed before parsing.
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `0x`-prefixed six-character RGB values are supported without changing the
@@ -47,14 +52,15 @@ Current baseline:
   is valid.
 - Non-hex characters, including signed-looking strings, are rejected before
   scanner conversion.
-- `build.sh` supports simulator destination overrides for legacy Xcode tests.
+- `build.sh` discovers an available iPhone simulator and supports explicit
+  destination overrides for current Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
 - Local verification targets stay available while full Xcode execution needs a
   macOS toolchain.
 
 Next priorities:
 
-- Modernize Swift/project settings in a dedicated pass
+- Align CocoaPods release metadata with the modernized source in a future tag
 - Add tests for additional case and malformed strings if supported
 - Clarify package-manager support if revived
 

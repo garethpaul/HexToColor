@@ -11,17 +11,17 @@ import XCTest
 @testable import HexToColor
 
 class HexToColorTests: XCTestCase {
-    func assertColor(color: UIColor, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+    func assertColor(_ color: UIColor, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
         var actualRed: CGFloat = 0
         var actualGreen: CGFloat = 0
         var actualBlue: CGFloat = 0
         var actualAlpha: CGFloat = 0
 
         XCTAssertTrue(color.getRed(&actualRed, green: &actualGreen, blue: &actualBlue, alpha: &actualAlpha))
-        XCTAssertEqualWithAccuracy(red, actualRed, accuracy: 0.001)
-        XCTAssertEqualWithAccuracy(green, actualGreen, accuracy: 0.001)
-        XCTAssertEqualWithAccuracy(blue, actualBlue, accuracy: 0.001)
-        XCTAssertEqualWithAccuracy(alpha, actualAlpha, accuracy: 0.001)
+        XCTAssertEqual(red, actualRed, accuracy: 0.001)
+        XCTAssertEqual(green, actualGreen, accuracy: 0.001)
+        XCTAssertEqual(blue, actualBlue, accuracy: 0.001)
+        XCTAssertEqual(alpha, actualAlpha, accuracy: 0.001)
     }
     
     func testWhite() {

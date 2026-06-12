@@ -71,3 +71,25 @@ should be exercised there instead of relying only on source-string checks.
 Completed on 2026-06-12 with the local static baseline and mutation check
 passing; the hosted macOS XCTest workflow is required before merge to compile
 and execute the labeled compatibility call.
+
+## Work Completed
+
+- Added an XCTest that invokes the deprecated `toColor(hex:)` call shape with
+  an alpha-bearing value and verifies all four normalized components.
+- Preserved the deprecation annotation, primary-parser delegation, accepted
+  formats, fallback behavior, deployment targets, and package metadata.
+- Added a static contract requiring both the compatibility test and its
+  labeled invocation.
+
+## Verification Completed
+
+- All four Make gates, checker compilation, and `git diff --check` passed
+  locally; XCTest and project listing were truthfully skipped because Xcode is
+  unavailable in the local environment.
+- Implementation push run `27393807170` and pull-request run `27393810000`
+  passed at commit `4a54e7d1162e96ffd0edacb35cf3ec0710097265`; the hosted macOS
+  gate compiled and executed the parser and XCTest baseline.
+- Post-merge push run `27393956378` and CodeQL setup run `27402321858` passed
+  at default-branch merge commit `ab20912866c98392ebb1645d462486cd897fa9f0`.
+- A mutation removing the labeled invocation was rejected by the static
+  baseline.

@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import sys
@@ -137,6 +138,7 @@ changes = read("CHANGES.md")
 gitignore = read(".gitignore")
 workflow = read(".github/workflows/check.yml")
 swift5_plan = read(SWIFT5_PLAN)
+labeled_api_plan = read(LABELED_API_PLAN)
 
 require_all(hex_source, [
     "public func toColor(_ hex: String) -> UIColor",
@@ -270,6 +272,21 @@ require_all(swift5_plan, [
     "make test", "Swift 5", "iOS 12", "persisted checkout credentials",
     "simulator discovery", "git diff --check",
 ], "Swift 5 modernization plan must record its completed contract")
+labeled_api_statuses = re.findall(r"^status: .+$", labeled_api_plan, flags=re.MULTILINE)
+labeled_api_sections = labeled_api_plan.split("## Verification Completed\n", 1)
+labeled_api_verification = labeled_api_sections[1] if len(labeled_api_sections) == 2 else ""
+labeled_api_required_evidence = (
+    "All four Make gates",
+    "push run `27393807170`",
+    "pull-request run `27393810000`",
+    "push run `27393956378`",
+    "CodeQL setup run `27402321858`",
+    "mutation removing the labeled invocation",
+)
+require(labeled_api_statuses == ["status: completed"] and
+        all(item in labeled_api_verification for item in labeled_api_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", labeled_api_verification, re.IGNORECASE) is None,
+        "labeled API plan must record completed status and actual verification")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

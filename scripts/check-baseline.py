@@ -8,16 +8,46 @@ import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PLAN = ROOT / "docs/plans/2026-06-08-hextocolor-baseline.md"
-SHORTHAND_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md"
-ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-rgba-alpha.md"
-SIGNED_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-signed-character-guard.md"
-HASH_ZERO_X_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md"
-MAKE_GATES_PLAN = ROOT / "docs/plans/2026-06-09-make-gate-aliases.md"
-CI_PLAN = ROOT / "docs/plans/2026-06-10-hosted-project-validation.md"
-INVALID_LENGTH_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md"
-PREFIXED_ALPHA_PLAN = ROOT / "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md"
-PREFIX_ALPHA_MATRIX_PLAN = ROOT / "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md"
+PLAN_DIR = ROOT / "docs/plans"
+SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
+EXPECTED_WORKFLOW = """name: Check
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+      - name: Run parser and XCTest baseline
+        run: make test
+"""
+EXPECTED_MAKEFILE = """.PHONY: build check lint test
+
+lint: check
+
+test: check
+\t@if command -v xcodebuild >/dev/null 2>&1; then ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
+
+build: test
+
+check:
+\tpython3 scripts/check-baseline.py
+"""
 
 
 def fail(message):
@@ -37,6 +67,11 @@ def require(condition, message):
         fail(message)
 
 
+def require_all(text, tokens, message):
+    missing = [token for token in tokens if token not in text]
+    require(not missing, f"{message}; missing: {', '.join(missing)}")
+
+
 def lint_plist(path):
     with (ROOT / path).open("rb") as plist_file:
         plistlib.load(plist_file)
@@ -44,6 +79,7 @@ def lint_plist(path):
 
 required_files = [
     ".gitignore",
+    "AGENTS.md",
     "CHANGES.md",
     "LICENSE",
     "Makefile",
@@ -56,7 +92,6 @@ required_files = [
     "HexToColor.xcodeproj/project.pbxproj",
     "HexToColor.xcodeproj/xcshareddata/xcschemes/HexToColor.xcscheme",
     "HexToColor.xcodeproj/xcshareddata/xcschemes/HexToColorTests.xcscheme",
-    "docs/plans/2026-06-10-hosted-project-validation.md",
     "HexToColor/Hex.swift",
     "HexToColor/HexToColor.h",
     "HexToColor/Info.plist",
@@ -73,11 +108,15 @@ required_files = [
     "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md",
     "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md",
     "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md",
+    "docs/plans/2026-06-10-hosted-project-validation.md",
+    SWIFT5_PLAN,
 ]
 
 for required_file in required_files:
     read(required_file)
 
+require(not (ROOT / ".travis.yml").exists(),
+        "obsolete Xcode 7 Travis configuration must stay removed")
 subprocess.check_call(["sh", "-n", "build.sh"], cwd=str(ROOT))
 require((ROOT / "build.sh").stat().st_mode & 0o111, "build.sh must be executable")
 lint_plist("HexToColor/Info.plist")
@@ -85,39 +124,42 @@ lint_plist("HexToColorTests/Info.plist")
 
 hex_source = read("HexToColor/Hex.swift")
 tests = read("HexToColorTests/HexToColorTests.swift")
+build_script = read("build.sh")
 makefile = read("Makefile")
 podspec = read("HexToColor.podspec")
+project = read("HexToColor.xcodeproj/project.pbxproj")
 readme = read("README.md")
+security = read("SECURITY.md")
 vision = read("VISION.md")
 changes = read("CHANGES.md")
 gitignore = read(".gitignore")
-plan = PLAN.read_text(errors="replace") if PLAN.exists() else ""
-whitespace_plan = read("docs/plans/2026-06-08-hextocolor-whitespace-baseline.md")
-zero_x_plan = read("docs/plans/2026-06-08-hextocolor-zero-x-prefix.md")
-shorthand_plan = SHORTHAND_PLAN.read_text(errors="replace") if SHORTHAND_PLAN.exists() else ""
-alpha_plan = ALPHA_PLAN.read_text(errors="replace") if ALPHA_PLAN.exists() else ""
-signed_plan = SIGNED_PLAN.read_text(errors="replace") if SIGNED_PLAN.exists() else ""
-hash_zero_x_plan = HASH_ZERO_X_PLAN.read_text(errors="replace") if HASH_ZERO_X_PLAN.exists() else ""
-invalid_length_plan = INVALID_LENGTH_PLAN.read_text(errors="replace") if INVALID_LENGTH_PLAN.exists() else ""
-prefixed_alpha_plan = PREFIXED_ALPHA_PLAN.read_text(errors="replace") if PREFIXED_ALPHA_PLAN.exists() else ""
-prefix_alpha_matrix_plan = PREFIX_ALPHA_MATRIX_PLAN.read_text(errors="replace") if PREFIX_ALPHA_MATRIX_PLAN.exists() else ""
+workflow = read(".github/workflows/check.yml")
+swift5_plan = read(SWIFT5_PLAN)
 
-require("public func toColor(hex: String) -> UIColor" in hex_source,
-        "Hex parser must expose the documented public toColor API")
-require("scanner.scanHexInt(&rgbValue)" in hex_source and "scanner.atEnd" in hex_source,
-        "Hex parser must reject partially scanned invalid hex strings")
-require("rangeOfCharacterFromSet" in hex_source and "invertedSet" in hex_source,
-        "Hex parser must explicitly reject non-hex characters before scanning")
-require('cString.hasPrefix("0X")' in hex_source and "advancedBy(2)" in hex_source,
-        "Hex parser must strip 0x-prefixed RGB strings before length validation")
-require("cString.characters.count == 3" in hex_source and "expandedString.append(character)" in hex_source,
-        "Hex parser must expand three-character RGB shorthand")
-require("cString.characters.count == 4" in hex_source and "cString.characters.count != 8" in hex_source,
-        "Hex parser must accept RGBA shorthand and eight-character RGBA strings")
-require("alphaValue = rgbValue & 0x000000FF" in hex_source and "alphaValue = 0xFF" in hex_source,
-        "Hex parser must derive alpha for RGBA input and default RGB alpha to opaque")
-require("return UIColor.grayColor()" in hex_source,
-        "Hex parser must keep the documented gray fallback")
+require_all(hex_source, [
+    "public func toColor(_ hex: String) -> UIColor",
+    'trimmingCharacters(in: .whitespacesAndNewlines)',
+    'colorString.hasPrefix("#")',
+    'colorString.hasPrefix("0X")',
+    "colorString.removeFirst()",
+    "colorString.removeFirst(2)",
+    "colorString.count == 3 || colorString.count == 4",
+    'colorString.map { "\\($0)\\($0)" }.joined()',
+    "colorString.count == 6 || colorString.count == 8",
+    'CharacterSet(charactersIn: "0123456789ABCDEF")',
+    "allowedHexCharacters.inverted",
+    "scanner.scanHexInt64(&colorValue)",
+    "scanner.isAtEnd",
+    "alphaValue = colorValue & 0x000000FF",
+    "alphaValue = 0xFF",
+    "return .gray",
+    '@available(*, deprecated, renamed: "toColor(_:)")',
+    "public func toColor(hex: String) -> UIColor",
+    "return toColor(hex)",
+], "Swift 5 parser contract is incomplete")
+require(hex_source.count("return .gray") == 3,
+        "all malformed parser paths must retain the gray fallback")
+
 for test_name in [
     "testWhite",
     "testLowercaseWithoutHash",
@@ -139,65 +181,90 @@ for test_name in [
 for prefixed_alpha_input in ["0xF0A8", "0x33669980", "#0xF0A8", "#0x33669980"]:
     require(f'toColor("{prefixed_alpha_input}")' in tests,
             f"missing prefixed alpha input coverage: {prefixed_alpha_input}")
+require_all(tests, ["func assertColor(_ color: UIColor", "accuracy:"],
+            "XCTest helpers must use current Swift assertion syntax")
+require("XCTAssertEqualWithAccuracy" not in tests,
+        "Swift 2 XCTest assertion syntax must stay removed")
 require("255.0, green: 255.0" not in tests,
         "tests must compare UIColor components in the 0...1 range")
-require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and 'toColor("#FFFFF")' in tests and 'toColor("#FFFFFFFFF")' in tests,
-        "invalid-length tests must use unsupported lengths now that four-character RGBA shorthand is valid")
-require("IOS_DESTINATION" in read("build.sh") and "IOS_SIMULATOR_NAME" in read("build.sh"),
-        "build.sh must support simulator destination overrides")
-require("https://twitter.com/gpj" in podspec,
-        "podspec social URL must use HTTPS")
-require(".PHONY: build check lint test" in makefile and "lint test build: check" in makefile,
-        "Makefile must expose lint, test, build, and check gate targets")
-require("make lint" in readme and "make test" in readme and "make build" in readme and "make check" in readme and "invalid hex" in readme.lower() and "whitespace" in readme.lower() and "0x" in readme.lower() and "shorthand" in readme.lower() and "alpha" in readme.lower(),
-        "README must document local checks, trimming, alpha, and invalid hex fallback")
-require("unsupported lengths" in readme.lower(),
-        "README must document unsupported length fallback")
-require("#0x" in readme.lower(),
-        "README must document hash-prefixed 0x normalization")
-require("0xrgba" in readme.lower() and "#0xrrggbbaa" in readme.lower(),
-        "README must document prefixed alpha normalization")
-require("non-hex" in readme.lower() and "signed" in readme.lower(),
-        "README must document explicit non-hex and signed-character fallback")
-require("make lint" in vision and "make test" in vision and "make build" in vision and "make check" in vision and "invalid hex" in vision.lower() and "whitespace" in vision.lower() and "0x" in vision.lower() and "shorthand" in vision.lower() and "alpha" in vision.lower() and "non-hex" in vision.lower(),
-        "VISION must describe the current baseline")
-require("unsupported lengths" in vision.lower(),
-        "VISION must describe unsupported length fallback")
-require("#0x" in vision.lower(),
-        "VISION must describe hash-prefixed 0x normalization")
-require("0x-prefixed shorthand and rgba" in vision.lower(),
-        "VISION must describe prefixed alpha normalization")
-require("public" in changes and "toColor(hex:)" in changes and
-        "scanHexInt" in changes and "make lint" in changes and "make test" in changes and "make build" in changes and "make check" in changes and "whitespace" in changes and "0x" in changes and "shorthand" in changes and "alpha" in changes and "non-hex" in changes,
-        "CHANGES must record parser and check baseline work")
-require("unsupported lengths" in changes.lower(),
-        "CHANGES must record unsupported length coverage")
-require("#0x" in changes.lower(),
-        "CHANGES must record hash-prefixed 0x coverage")
-require("prefixed shorthand and rgba" in changes.lower(),
-        "CHANGES must record prefixed alpha coverage")
-require("status: completed" in plan, "baseline plan must be marked completed")
-require("status: completed" in whitespace_plan, "whitespace plan must be marked completed")
-require("status: completed" in zero_x_plan, "0x prefix plan must be marked completed")
-require("status: completed" in shorthand_plan, "shorthand plan must be marked completed")
-require("status: completed" in alpha_plan, "alpha plan must be marked completed")
-require("status: completed" in signed_plan, "signed-character plan must be marked completed")
-require("status: completed" in hash_zero_x_plan, "hash 0x prefix plan must be marked completed")
-require("status: completed" in invalid_length_plan, "invalid length coverage plan must be marked completed")
-require("status: completed" in prefixed_alpha_plan, "prefixed alpha coverage plan must be marked completed")
-require("status: completed" in prefix_alpha_matrix_plan and "make check" in prefix_alpha_matrix_plan,
-        "prefix alpha matrix plan must be completed and record verification")
-ci_plan = CI_PLAN.read_text(errors="replace") if CI_PLAN.exists() else ""
-require("status: completed" in ci_plan and "make check" in ci_plan,
-        "hosted project validation plan must be completed and record verification")
-workflow = read(".github/workflows/check.yml")
-require("permissions:\n  contents: read" in workflow and "cancel-in-progress: true" in workflow and
-        "runs-on: macos-15" in workflow and "timeout-minutes: 10" in workflow and
-        "actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10" in workflow and
-        "run: make check" in workflow,
-        "GitHub Actions must keep the bounded, least-privilege macOS project check")
-make_gates_plan = MAKE_GATES_PLAN.read_text(errors="replace") if MAKE_GATES_PLAN.exists() else ""
-require("status: completed" in make_gates_plan, "Make gate alias plan must be marked completed")
+require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and
+        'toColor("#FFFFF")' in tests and 'toColor("#FFFFFFFFF")' in tests,
+        "invalid-length tests must use unsupported lengths")
+
+require_all(build_script, [
+    "set -eu",
+    "IOS_DESTINATION",
+    "IOS_SIMULATOR_NAME",
+    "xcrun simctl list devices available",
+    "No available iPhone simulator was found.",
+    '-destination "$DESTINATION"',
+    "build test",
+], "build.sh must discover or accept a current simulator destination")
+require("iPhone 5" not in build_script,
+        "build.sh must not restore a retired fixed simulator default")
+
+require(project.count("SWIFT_VERSION = 5.0;") == 4,
+        "framework and test configurations must explicitly use Swift 5")
+require(project.count("IPHONEOS_DEPLOYMENT_TARGET = 12.0;") == 4,
+        "all project configurations must retain the iOS 12 deployment floor")
+require("SWIFT_VERSION = 2" not in project,
+        "Swift 2 project settings must stay removed")
+
+require(makefile == EXPECTED_MAKEFILE,
+        "Makefile must exactly preserve static and executable verification gates")
+require_all(podspec, [
+    's.platform     = :ios, "12.0"',
+    's.swift_version = "5.0"',
+    's.version      = "0.0.1"',
+    's.social_media_url   = "https://twitter.com/gpj"',
+], "podspec must declare current compatibility without inventing a release")
+
+require(workflow == EXPECTED_WORKFLOW,
+        "GitHub Actions must exactly match the bounded, least-privilege macOS XCTest workflow")
+
+require_all(readme.lower(), [
+    "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
+    "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
+    "#0x", "0xrgba", "#0xrrggbbaa", "non-hex", "signed",
+    "persist checkout credentials", "real xctest suite",
+], "README must document parser behavior and executable hosted verification")
+require_all(vision.lower(), [
+    "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
+    "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
+    "#0x", "0x-prefixed shorthand and rgba", "non-hex", "real xctest suite",
+], "VISION must describe the current parser and hosted validation baseline")
+require_all(changes, [
+    "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
+    "make check", "whitespace", "0x", "shorthand", "alpha", "non-hex",
+    "unsupported lengths", "#0x", "prefixed shorthand and RGBA", "Swift 5", "iOS 12",
+    "real XCTest", "credential persistence disabled",
+], "CHANGES must record parser and current-Xcode verification work")
+require_all(security, ["Security Policy", "privately", "malformed"],
+            "SECURITY must retain reporting and malformed-input guidance")
+
+completed_plans = [
+    "docs/plans/2026-06-08-hextocolor-baseline.md",
+    "docs/plans/2026-06-08-hextocolor-whitespace-baseline.md",
+    "docs/plans/2026-06-08-hextocolor-zero-x-prefix.md",
+    "docs/plans/2026-06-09-hextocolor-rgb-shorthand.md",
+    "docs/plans/2026-06-09-hextocolor-rgba-alpha.md",
+    "docs/plans/2026-06-09-hextocolor-signed-character-guard.md",
+    "docs/plans/2026-06-09-hextocolor-hash-zero-x-prefix.md",
+    "docs/plans/2026-06-09-make-gate-aliases.md",
+    "docs/plans/2026-06-09-hextocolor-invalid-length-coverage.md",
+    "docs/plans/2026-06-09-hextocolor-prefixed-alpha-coverage.md",
+    "docs/plans/2026-06-10-hextocolor-prefix-alpha-matrix.md",
+    "docs/plans/2026-06-10-hosted-project-validation.md",
+    SWIFT5_PLAN,
+]
+for plan_path in completed_plans:
+    require("status: completed" in read(plan_path),
+            f"completed plan marker missing: {plan_path}")
+require_all(swift5_plan, [
+    "make test", "Swift 5", "iOS 12", "persisted checkout credentials",
+    "simulator discovery", "git diff --check",
+], "Swift 5 modernization plan must record its completed contract")
+
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")
 

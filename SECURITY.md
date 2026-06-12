@@ -8,7 +8,7 @@ Project summary: Convenience Methods for UIColor
 
 ## Reporting a Vulnerability
 
-Please report suspected vulnerabilities through GitHub's private vulnerability reporting or by opening a draft GitHub Security Advisory for `garethpaul/HexToColor` when that option is available. If GitHub does not show a private reporting option for this repository, contact the repository owner through GitHub and avoid posting exploit details publicly until the issue can be assessed.
+Please report suspected vulnerabilities privately through GitHub's private vulnerability reporting or by opening a draft GitHub Security Advisory for `garethpaul/HexToColor` when that option is available. If GitHub does not show a private reporting option for this repository, contact the repository owner through GitHub and avoid posting exploit details publicly until the issue can be assessed.
 
 Do not open a public issue that includes exploit code, secrets, personal data, or detailed reproduction steps for an unpatched vulnerability.
 
@@ -41,6 +41,8 @@ prefixes covered at both alpha-bearing widths.
 
 GitHub Actions runs the parser guardrails and Xcode project parse with read-only
 repository permissions before changes land.
+Hosted checkout credentials are not persisted, and the workflow compiles and
+runs the parser XCTest suite without deployment or release credentials.
 
 Dependency updates should come from trusted package managers and should keep lockfiles in sync when lockfiles exist. Do not commit credentials, private keys, tokens, generated secrets, or machine-local configuration. If a vulnerability depends on a compromised package, typosquatting risk, insecure transitive dependency, or unsafe build step, include the package name, affected version, and the path through which it is used.
 

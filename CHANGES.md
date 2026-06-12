@@ -1,5 +1,18 @@
 # Changes
 
+## 2026-06-12
+
+- Migrated the parser and XCTest target from Swift 2-era syntax to Swift 5 while
+  preserving unlabeled calls and a deprecated labeled compatibility wrapper.
+- Raised the Xcode project deployment floor to iOS 12 and made `build.sh`
+  discover an available simulator when no destination override is provided.
+- Aligned CocoaPods compatibility metadata with Swift 5 and iOS 12 while
+  leaving release versioning unchanged.
+- Changed hosted macOS validation from project listing only to the real XCTest
+  suite through `make test`, with checkout credential persistence disabled.
+- Removed the obsolete Xcode 7 Travis job so the current GitHub Actions XCTest
+  workflow is the sole hosted validation contract.
+
 ## 2026-06-10
 
 - Completed the alpha parsing test matrix for `0x` and `#0x` prefixes at both

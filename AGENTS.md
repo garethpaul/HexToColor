@@ -17,6 +17,8 @@
 
 - Install dependencies: no repository-specific install command is documented.
 - Full baseline: `make check`
+- Hosted/local XCTest gate: `make test`
+- Build alias: `make build`
 - Local Apple development: `open HexToColor.xcodeproj`
 - If a command above skips because a platform toolchain is missing, verify on a machine with that SDK before claiming platform behavior is tested.
 
@@ -42,7 +44,8 @@
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
-- Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` when `./build.sh` needs a simulator different from the legacy default.
+- Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically discovered available iPhone simulator.
+- The project and test targets use Swift 5 with an iOS 12 deployment floor; preserve the deprecated labeled `toColor(hex:)` wrapper when changing the unlabeled public API.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.

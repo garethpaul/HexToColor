@@ -49,18 +49,23 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Open `HexToColor.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
-- Run `./build.sh` when the required platform toolchain is installed.
-- GitHub Actions runs `make check` on macOS and parses the Xcode project without
-  selecting the obsolete default simulator.
+- Run `make test` or `./build.sh` when the required platform toolchain is
+  installed. The script discovers an available iPhone simulator unless
+  `IOS_DESTINATION` or `IOS_SIMULATOR_NAME` is set.
+- GitHub Actions runs `make test` on macOS, compiling the Swift 5 framework at
+  its iOS 12 deployment floor and executing the real XCTest suite. The checkout
+  step does not persist checkout credentials.
+- The obsolete Xcode 7 Travis job is retired, leaving one current hosted
+  verification path.
 
 ## Testing and Verification
 
-- Run `make lint`, `make test`, `make build`, and `make check` for static
-  parser, plist, podspec, build-script, and Xcode project guardrails that do not
-  require Xcode. The `lint`, `test`, and `build` targets currently delegate to
-  the static baseline.
+- Run `make lint` or `make check` for static parser, plist, podspec,
+  build-script, and Xcode project guardrails. Run `make test` or `make build`
+  for those checks plus the XCTest suite when Xcode is installed.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
-- The public Swift API is `toColor(hex:)`; surrounding whitespace is trimmed,
+- The primary Swift API is `toColor(_:)`, with deprecated `toColor(hex:)`
+  compatibility for labeled callers. Surrounding whitespace is trimmed,
   `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, `0xRRGGBB`, and
   `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized
   through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
@@ -84,8 +89,13 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 - See `docs/plans/2026-06-10-hosted-project-validation.md` for the hosted Xcode
   project parsing boundary.
+- See `docs/plans/2026-06-12-swift5-xctest-modernization.md` for the current
+  Swift language, iOS deployment, simulator discovery, and hosted XCTest gate.
+- The CocoaPods specification declares Swift 5 and iOS 12 compatibility; its
+  release version and source tag remain at 0.0.1 until a future release.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
-- Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` when `./build.sh` needs a simulator different from the legacy default.
+- Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically
+  discovered available iPhone simulator used by `./build.sh`.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.

@@ -1,6 +1,6 @@
 # Failable Hex Color Parser
 
-status: planned
+status: completed
 
 ## Context
 
@@ -66,3 +66,25 @@ also prevents valid-format behavior from drifting between APIs.
 - `git diff --check`
 - Hostile mutations removing the optional return, parser delegation, focused
   tests, completed status, or verification evidence must be rejected.
+
+## Work Completed
+
+- Added public `parseHexColor(_:) -> UIColor?` using the existing normalization,
+  validation, scanner, and component-conversion behavior.
+- Kept `toColor(_:)` as the sole gray-fallback wrapper and preserved deprecated
+  `toColor(hex:)` delegation.
+- Added focused XCTest coverage that distinguishes valid `#808080` from invalid
+  length, character, and signed-looking inputs.
+- Updated parser, security, vision, change, and baseline contracts.
+
+## Verification Completed
+
+- All four Make gates passed locally. `make test` and `make build` ran the full
+  static baseline and reported that XCTest was skipped because `xcodebuild` is
+  not installed on this host.
+- `sh -n build.sh`, `ruby -c HexToColor.podspec`,
+  `python3 -m py_compile scripts/check-baseline.py`, and `git diff --check`
+  passed.
+- Seven isolated hostile mutations were rejected: optional-signature removal,
+  nil-path weakening, wrapper-delegation removal, focused test removal,
+  malformed-input assertion removal, stale plan status, and missing evidence.

@@ -32,6 +32,8 @@ Current baseline:
 - CocoaPods compatibility metadata matches Swift 5 and iOS 12 while release
   versioning remains unchanged until a future tag.
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
+- Public `parseHexColor(_:)` returns `nil` when callers need explicit failure,
+  while both existing `toColor` call shapes preserve the gray fallback.
 - Alpha parsing remains characterized for both accepted prefixes at shorthand
   and full RGBA widths.
 - The package exposes public `toColor(_:)` and retains deprecated

@@ -84,6 +84,18 @@ class HexToColorTests: XCTestCase {
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 128.0 / 255.0)
     }
 
+    func testFailableParserDistinguishesValidGrayFromInvalidInput() {
+        guard let gray = parseHexColor("#808080") else {
+            XCTFail("Valid gray should parse successfully")
+            return
+        }
+
+        assertColor(gray, red: 128.0 / 255.0, green: 128.0 / 255.0, blue: 128.0 / 255.0, alpha: 1.0)
+        XCTAssertNil(parseHexColor("#FF"))
+        XCTAssertNil(parseHexColor("#FFFFFG"))
+        XCTAssertNil(parseHexColor("-FFFFF"))
+    }
+
     func testTrimsWhitespaceAndNewlines() {
         let color = toColor(" \n#336699\t")
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 1.0)

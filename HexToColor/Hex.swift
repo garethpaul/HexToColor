@@ -8,9 +8,9 @@
 
 import UIKit
 
-// Converts a hex string into a UIColor.
+// Parses a hex string into a UIColor.
 //
-public func toColor(_ hex: String) -> UIColor {
+public func parseHexColor(_ hex: String) -> UIColor? {
     var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
 
     if colorString.hasPrefix("#") {
@@ -26,18 +26,18 @@ public func toColor(_ hex: String) -> UIColor {
     }
 
     guard colorString.count == 6 || colorString.count == 8 else {
-        return .gray
+        return nil
     }
 
     let allowedHexCharacters = CharacterSet(charactersIn: "0123456789ABCDEF")
     guard colorString.rangeOfCharacter(from: allowedHexCharacters.inverted) == nil else {
-        return .gray
+        return nil
     }
 
     var colorValue: UInt64 = 0
     let scanner = Scanner(string: colorString)
     guard scanner.scanHexInt64(&colorValue), scanner.isAtEnd else {
-        return .gray
+        return nil
     }
 
     let redValue: UInt64
@@ -62,6 +62,12 @@ public func toColor(_ hex: String) -> UIColor {
         blue: CGFloat(blueValue) / 255.0,
         alpha: CGFloat(alphaValue) / 255.0
     )
+}
+
+// Converts a hex string into a UIColor, falling back to gray for compatibility.
+//
+public func toColor(_ hex: String) -> UIColor {
+    return parseHexColor(hex) ?? .gray
 }
 
 @available(*, deprecated, renamed: "toColor(_:)")

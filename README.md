@@ -64,9 +64,11 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   build-script, and Xcode project guardrails. Run `make test` or `make build`
   for those checks plus the XCTest suite when Xcode is installed.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
-- The primary Swift API is `toColor(_:)`, with deprecated `toColor(hex:)`
-  compatibility for labeled callers. Hosted XCTest executes the labeled path
-  against RGBA parsing so compatibility is not only checked statically.
+- Use `parseHexColor(_:)` when malformed input must be distinguishable from a
+  valid gray color; it returns `nil` on failure. The compatibility
+  `toColor(_:)` API and deprecated `toColor(hex:)` call shape retain the gray
+  fallback. Hosted XCTest executes the labeled path against RGBA parsing so
+  compatibility is not only checked statically.
   Surrounding whitespace is trimmed,
   `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, `0xRRGGBB`, and
   `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized

@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Made every Make verification target derive the checkout root so parser and
+  XCTest gates work from external directories.
 - Validated ASCII hex source characters before uppercasing so Unicode case
   expansion cannot turn malformed input into accepted color data.
 - Added hosted XCTest coverage proving fully transparent RGBA is a valid

@@ -15,6 +15,7 @@ LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
 FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
 TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-boundary.md"
 UNICODE_NORMALIZATION_PLAN = "docs/plans/2026-06-13-hextocolor-unicode-normalization-boundary.md"
+LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-13-location-independent-make.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -43,15 +44,17 @@ jobs:
 """
 EXPECTED_MAKEFILE = """.PHONY: build check lint test
 
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 lint: check
 
 test: check
-\t@if command -v xcodebuild >/dev/null 2>&1; then ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
+\t@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
 
 build: test
 
 check:
-\tpython3 scripts/check-baseline.py
+\t@python3 "$(ROOT)/scripts/check-baseline.py"
 """
 
 
@@ -119,6 +122,7 @@ required_files = [
     FAILABLE_PARSER_PLAN,
     TRANSPARENT_ALPHA_PLAN,
     UNICODE_NORMALIZATION_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
 ]
 
 for required_file in required_files:
@@ -148,6 +152,7 @@ labeled_api_plan = read(LABELED_API_PLAN)
 failable_parser_plan = read(FAILABLE_PARSER_PLAN)
 transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
 unicode_normalization_plan = read(UNICODE_NORMALIZATION_PLAN)
+location_independent_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
 
 require_all(hex_source, [
     "public func parseHexColor(_ hex: String) -> UIColor?",
@@ -277,6 +282,7 @@ require_all(readme.lower(), [
     "parsehexcolor(_:)", "returns `nil`", "valid gray color",
     "fully transparent rgba",
     "persist checkout credentials", "real xctest suite",
+    "absolute makefile path", "any working directory",
 ], "README must document parser behavior and executable hosted verification")
 require_all(vision.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
@@ -292,6 +298,7 @@ require_all(changes, [
     "real XCTest", "credential persistence disabled",
     "parseHexColor(_:)", "valid gray color",
     "fully transparent RGBA",
+    "Make verification target", "external directories",
 ], "CHANGES must record parser and current-Xcode verification work")
 require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
@@ -314,6 +321,7 @@ completed_plans = [
     FAILABLE_PARSER_PLAN,
     TRANSPARENT_ALPHA_PLAN,
     UNICODE_NORMALIZATION_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -386,6 +394,22 @@ require(unicode_normalization_statuses == ["status: completed"] and
         all(item in unicode_normalization_verification for item in unicode_normalization_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", unicode_normalization_verification, re.IGNORECASE) is None,
         "Unicode normalization plan must record completed status and actual local verification")
+location_independent_make_statuses = re.findall(r"^status: .+$", location_independent_make_plan, flags=re.MULTILINE)
+location_independent_make_sections = location_independent_make_plan.split("## Verification Completed\n", 1)
+location_independent_make_verification = location_independent_make_sections[1] if len(location_independent_make_sections) == 2 else ""
+location_independent_make_required_evidence = (
+    "Root and external-directory Make gates passed",
+    "root-derivation mutation failed",
+    "checker-invocation mutation failed",
+    "XCTest-script mutation failed",
+    "plan-status mutation failed",
+    "plan-evidence mutation failed",
+    "documentation mutation failed",
+)
+require(location_independent_make_statuses == ["status: completed"] and
+        all(item in location_independent_make_verification for item in location_independent_make_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", location_independent_make_verification, re.IGNORECASE) is None,
+        "location-independent Make plan must record completed status and actual verification")
 require_all(readme.lower(), ["ascii source characters", "unicode expansion"],
             "README must document pre-normalization ASCII validation")
 require_all(security.lower(), ["ascii hex", "unicode case normalization"],

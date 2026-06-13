@@ -1,6 +1,6 @@
 # Location-Independent HexToColor Verification
 
-status: planned
+status: completed
 
 ## Context
 
@@ -39,8 +39,22 @@ caller-relative recipes; no runtime state or migration exists.
 
 ## Work Completed
 
-Pending implementation.
+- Derived `ROOT` from the loaded Makefile, invoked the Python checker through
+  its absolute path, and changed into the checkout before running `build.sh`.
+- Added exact Makefile, completed-plan, external-run, and synchronized-guidance
+  contracts.
+- Preserved Swift sources, tests, podspec, Xcode project, and workflow files.
 
 ## Verification Completed
 
-Pending implementation and validation. Run `make check` before completion.
+- Root and external-directory Make gates passed for `lint`, `test`, `build`,
+  and `check`; Linux correctly reported the existing XCTest toolchain skip.
+- The root-derivation mutation failed.
+- The checker-invocation mutation failed.
+- The XCTest-script mutation failed.
+- The plan-status mutation failed.
+- The plan-evidence mutation failed.
+- The documentation mutation failed.
+- Checker compilation, shell syntax, podspec syntax, plist parsing, workflow
+  YAML parsing, diff hygiene, exact intended-path review, secret scanning, and
+  generated-artifact inspection passed.

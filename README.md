@@ -103,6 +103,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically
   discovered available iPhone simulator used by `./build.sh`.
+- Every Make verification target derives the checkout root from the loaded
+  Makefile, so an absolute Makefile path works from any working directory.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.

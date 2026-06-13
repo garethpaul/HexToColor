@@ -96,6 +96,19 @@ class HexToColorTests: XCTestCase {
         XCTAssertNil(parseHexColor("-FFFFF"))
     }
 
+    func testTransparentRGBAIsValidAtBothWidths() {
+        for input in ["#0000", "#00000000"] {
+            let parsed = parseHexColor(input)
+            XCTAssertNotNil(parsed)
+            guard let color = parsed else {
+                continue
+            }
+
+            assertColor(color, red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0)
+            assertColor(toColor(input), red: 0.0, green: 0.0, blue: 0.0, alpha: 0.0)
+        }
+    }
+
     func testTrimsWhitespaceAndNewlines() {
         let color = toColor(" \n#336699\t")
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 1.0)

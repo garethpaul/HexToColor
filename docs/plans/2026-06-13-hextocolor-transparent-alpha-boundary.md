@@ -1,6 +1,6 @@
 # Cover Transparent Alpha Boundaries
 
-status: planned
+status: completed
 
 ## Context
 
@@ -44,8 +44,26 @@ changes without explicit protection for valid all-zero RGBA values.
 
 ## Work Completed
 
-Pending implementation.
+- Added one hosted XCTest covering both `#0000` shorthand and `#00000000`
+  full-width RGBA through the failable parser.
+- Required each input to produce a non-`nil` color with zero red, green, blue,
+  and alpha components.
+- Verified the compatibility wrapper returns the same transparent color rather
+  than its gray fallback.
+- Extended static test, documentation, and completed-plan contracts without
+  changing parser source, project settings, workflow, or release metadata.
 
 ## Verification Completed
 
-Pending implementation and verification.
+- All four Make gates passed; XCTest was skipped because `xcodebuild` is not
+  installed locally.
+- `sh -n build.sh`, `ruby -c HexToColor.podspec`, workflow YAML parsing,
+  `python3 -m py_compile scripts/check-baseline.py`, and `git diff --check`
+  passed.
+- Exact-base comparisons confirmed `Hex.swift`, the podspec, Xcode project, and
+  hosted workflow remained unchanged.
+- Three isolated hostile mutations were rejected: test removal, non-`nil`
+  assertion removal, and a changed zero-alpha expectation.
+- Intended-file generated-artifact and secret-pattern scans passed.
+- Hosted macOS XCTest and CodeQL evidence is recorded separately after push;
+  this plan claims only the completed local static verification above.

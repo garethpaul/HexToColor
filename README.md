@@ -76,7 +76,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   invalid hex strings fall back to `UIColor.grayColor()`. Unsupported lengths
   stay on the gray fallback path. Signed or otherwise non-hex characters are
   rejected before scanner conversion. Tests cover both `0x` and `#0x` prefixes
-  at shorthand and full RGBA widths.
+  at shorthand and full RGBA widths. Fully transparent RGBA remains a valid
+  non-`nil` parse and does not take the gray compatibility fallback.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

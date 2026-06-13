@@ -46,6 +46,7 @@
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically discovered available iPhone simulator.
 - The project and test targets use Swift 5 with an iOS 12 deployment floor; preserve the deprecated labeled `toColor(hex:)` wrapper when changing the unlabeled public API.
+- Validate caller-supplied ASCII hex characters before Unicode case normalization so non-ASCII expansion cannot create valid input.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.

@@ -14,6 +14,7 @@ SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
 LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
 FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
 TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-boundary.md"
+UNICODE_NORMALIZATION_PLAN = "docs/plans/2026-06-13-hextocolor-unicode-normalization-boundary.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -117,6 +118,7 @@ required_files = [
     LABELED_API_PLAN,
     FAILABLE_PARSER_PLAN,
     TRANSPARENT_ALPHA_PLAN,
+    UNICODE_NORMALIZATION_PLAN,
 ]
 
 for required_file in required_files:
@@ -145,20 +147,22 @@ swift5_plan = read(SWIFT5_PLAN)
 labeled_api_plan = read(LABELED_API_PLAN)
 failable_parser_plan = read(FAILABLE_PARSER_PLAN)
 transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
+unicode_normalization_plan = read(UNICODE_NORMALIZATION_PLAN)
 
 require_all(hex_source, [
     "public func parseHexColor(_ hex: String) -> UIColor?",
     "public func toColor(_ hex: String) -> UIColor",
-    'trimmingCharacters(in: .whitespacesAndNewlines)',
+    'var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines)',
     'colorString.hasPrefix("#")',
-    'colorString.hasPrefix("0X")',
+    'colorString.hasPrefix("0x") || colorString.hasPrefix("0X")',
     "colorString.removeFirst()",
     "colorString.removeFirst(2)",
     "colorString.count == 3 || colorString.count == 4",
     'colorString.map { "\\($0)\\($0)" }.joined()',
     "colorString.count == 6 || colorString.count == 8",
-    'CharacterSet(charactersIn: "0123456789ABCDEF")',
+    'CharacterSet(charactersIn: "0123456789ABCDEFabcdef")',
     "allowedHexCharacters.inverted",
+    "colorString = colorString.uppercased()",
     "scanner.scanHexInt64(&colorValue)",
     "scanner.isAtEnd",
     "alphaValue = colorValue & 0x000000FF",
@@ -189,6 +193,7 @@ for test_name in [
     "testDeprecatedLabeledAPICompatibility",
     "testFailableParserDistinguishesValidGrayFromInvalidInput",
     "testTransparentRGBAIsValidAtBothWidths",
+    "testUnicodeCaseExpansionDoesNotCreateValidHex",
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
@@ -223,6 +228,16 @@ require_all(tests, [
 ], "transparent RGBA must remain a successful failable and compatibility parse")
 require(tests.count("alpha: 0.0") == 2,
         "transparent RGBA coverage must assert zero alpha for both parser paths")
+require('XCTAssertNil(parseHexColor("#ﬀ0000"))' in tests and
+        'assertColor(toColor("#ﬀ0000")' in tests,
+        "Unicode case-expansion input must fail explicitly and use compatibility gray")
+require(hex_source.index('CharacterSet(charactersIn: "0123456789ABCDEFabcdef")') <
+        hex_source.index("colorString = colorString.uppercased()") <
+        hex_source.index("scanner.scanHexInt64(&colorValue)"),
+        "ASCII source validation must precede case normalization and scanning")
+require('var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines)\n' in hex_source and
+        hex_source.count("uppercased()") == 1,
+        "whole-string uppercasing must occur exactly once after source validation")
 
 require_all(build_script, [
     "set -eu",
@@ -298,6 +313,7 @@ completed_plans = [
     LABELED_API_PLAN,
     FAILABLE_PARSER_PLAN,
     TRANSPARENT_ALPHA_PLAN,
+    UNICODE_NORMALIZATION_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -353,6 +369,31 @@ require(transparent_alpha_statuses == ["status: completed"] and
         all(item in transparent_alpha_verification for item in transparent_alpha_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", transparent_alpha_verification, re.IGNORECASE) is None,
         "transparent alpha plan must record completed status and actual local verification")
+unicode_normalization_statuses = re.findall(r"^status: .+$", unicode_normalization_plan, flags=re.MULTILINE)
+unicode_normalization_sections = unicode_normalization_plan.split("## Verification Completed\n", 1)
+unicode_normalization_verification = unicode_normalization_sections[1] if len(unicode_normalization_sections) == 2 else ""
+unicode_normalization_required_evidence = (
+    "All four Make gates passed",
+    "XCTest was skipped because `xcodebuild` is not installed locally",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "pre-validation uppercasing mutation failed",
+    "Unicode regression removal mutation failed",
+    "ASCII character-set weakening mutation failed",
+    "hosted macOS XCTest and CodeQL snapshot",
+)
+require(unicode_normalization_statuses == ["status: completed"] and
+        all(item in unicode_normalization_verification for item in unicode_normalization_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", unicode_normalization_verification, re.IGNORECASE) is None,
+        "Unicode normalization plan must record completed status and actual local verification")
+require_all(readme.lower(), ["ascii source characters", "unicode expansion"],
+            "README must document pre-normalization ASCII validation")
+require_all(security.lower(), ["ascii hex", "unicode case normalization"],
+            "security guidance must document the normalization boundary")
+require("Validate ASCII hex source characters before Unicode case normalization" in vision and
+        "Unicode case" in changes and
+        "before Unicode case normalization" in read("AGENTS.md"),
+        "project guidance must preserve the Unicode normalization boundary")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

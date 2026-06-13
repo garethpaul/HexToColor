@@ -41,6 +41,9 @@ Use `parseHexColor(_:)` at validation boundaries so malformed input is reported
 as `nil` instead of being indistinguishable from a valid gray color. The
 existing `toColor` APIs retain their compatibility fallback.
 
+Validate source characters as ASCII hex before Unicode case normalization;
+case expansion must not transform non-ASCII input into accepted color data.
+
 ## Dependency and Supply Chain Security
 
 GitHub Actions runs the parser guardrails and Xcode project parse with read-only

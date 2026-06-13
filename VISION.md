@@ -34,6 +34,7 @@ Current baseline:
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
 - Public `parseHexColor(_:)` returns `nil` when callers need explicit failure,
   while both existing `toColor` call shapes preserve the gray fallback.
+- Validate ASCII hex source characters before Unicode case normalization.
 - Alpha parsing remains characterized for both accepted prefixes at shorthand
   and full RGBA widths.
 - The package exposes public `toColor(_:)` and retains deprecated

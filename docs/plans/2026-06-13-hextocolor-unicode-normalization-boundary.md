@@ -1,6 +1,6 @@
 # Validate Hex Before Unicode Case Normalization
 
-status: in_progress
+status: completed
 
 ## Context
 
@@ -41,3 +41,25 @@ ASCII inputs retain their current results. Inputs that rely on Unicode case
 expansion into ASCII hex now fail explicitly or use the compatibility gray
 fallback. Rollback restores acceptance of transformed non-ASCII input; no
 stored data or package format changes exist.
+
+## Work Completed
+
+- Deferred uppercasing until after source length and ASCII hex validation.
+- Preserved lowercase `0x` and uppercase `0X` prefixes explicitly without
+  relying on whole-string normalization.
+- Added focused XCTest, static ordering contracts, project guidance, and
+  completed-plan evidence requirements.
+
+## Verification Completed
+
+- All four Make gates passed the static baseline.
+- XCTest was skipped because `xcodebuild` is not installed locally; hosted macOS
+  XCTest remains the executable authority.
+- `sh -n build.sh`, `ruby -c HexToColor.podspec`, Python checker compilation,
+  workflow YAML parsing, and `git diff --check` passed.
+- The pre-validation uppercasing mutation failed.
+- The Unicode regression removal mutation failed.
+- The ASCII character-set weakening mutation failed.
+- Intended-file artifact and secret-pattern scans passed.
+- The hosted macOS XCTest and CodeQL snapshot is recorded after push using
+  bounded exact-head queries without polling.

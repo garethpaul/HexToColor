@@ -11,13 +11,13 @@ import UIKit
 // Parses a hex string into a UIColor.
 //
 public func parseHexColor(_ hex: String) -> UIColor? {
-    var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+    var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
 
     if colorString.hasPrefix("#") {
         colorString.removeFirst()
     }
 
-    if colorString.hasPrefix("0X") {
+    if colorString.hasPrefix("0x") || colorString.hasPrefix("0X") {
         colorString.removeFirst(2)
     }
 
@@ -29,10 +29,12 @@ public func parseHexColor(_ hex: String) -> UIColor? {
         return nil
     }
 
-    let allowedHexCharacters = CharacterSet(charactersIn: "0123456789ABCDEF")
+    let allowedHexCharacters = CharacterSet(charactersIn: "0123456789ABCDEFabcdef")
     guard colorString.rangeOfCharacter(from: allowedHexCharacters.inverted) == nil else {
         return nil
     }
+
+    colorString = colorString.uppercased()
 
     var colorValue: UInt64 = 0
     let scanner = Scanner(string: colorString)

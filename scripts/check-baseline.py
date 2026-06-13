@@ -13,6 +13,7 @@ PLAN_DIR = ROOT / "docs/plans"
 SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
 LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
 FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
+TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-boundary.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -115,6 +116,7 @@ required_files = [
     SWIFT5_PLAN,
     LABELED_API_PLAN,
     FAILABLE_PARSER_PLAN,
+    TRANSPARENT_ALPHA_PLAN,
 ]
 
 for required_file in required_files:
@@ -142,6 +144,7 @@ workflow = read(".github/workflows/check.yml")
 swift5_plan = read(SWIFT5_PLAN)
 labeled_api_plan = read(LABELED_API_PLAN)
 failable_parser_plan = read(FAILABLE_PARSER_PLAN)
+transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
 
 require_all(hex_source, [
     "public func parseHexColor(_ hex: String) -> UIColor?",
@@ -185,6 +188,7 @@ for test_name in [
     "testEightDigitRGBAWithAlpha",
     "testDeprecatedLabeledAPICompatibility",
     "testFailableParserDistinguishesValidGrayFromInvalidInput",
+    "testTransparentRGBAIsValidAtBothWidths",
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
@@ -211,6 +215,14 @@ require_all(tests, [
     'XCTAssertNil(parseHexColor("#FFFFFG"))',
     'XCTAssertNil(parseHexColor("-FFFFF"))',
 ], "failable parser must distinguish valid gray from malformed input")
+require_all(tests, [
+    'for input in ["#0000", "#00000000"]',
+    "let parsed = parseHexColor(input)",
+    "XCTAssertNotNil(parsed)",
+    "assertColor(toColor(input)",
+], "transparent RGBA must remain a successful failable and compatibility parse")
+require(tests.count("alpha: 0.0") == 2,
+        "transparent RGBA coverage must assert zero alpha for both parser paths")
 
 require_all(build_script, [
     "set -eu",
@@ -248,6 +260,7 @@ require_all(readme.lower(), [
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
     "#0x", "0xrgba", "#0xrrggbbaa", "non-hex", "signed",
     "parsehexcolor(_:)", "returns `nil`", "valid gray color",
+    "fully transparent rgba",
     "persist checkout credentials", "real xctest suite",
 ], "README must document parser behavior and executable hosted verification")
 require_all(vision.lower(), [
@@ -255,6 +268,7 @@ require_all(vision.lower(), [
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
     "#0x", "0x-prefixed shorthand and rgba", "non-hex", "real xctest suite",
     "parsehexcolor(_:)", "explicit failure",
+    "fully transparent rgba",
 ], "VISION must describe the current parser and hosted validation baseline")
 require_all(changes, [
     "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
@@ -262,6 +276,7 @@ require_all(changes, [
     "unsupported lengths", "#0x", "prefixed shorthand and RGBA", "Swift 5", "iOS 12",
     "real XCTest", "credential persistence disabled",
     "parseHexColor(_:)", "valid gray color",
+    "fully transparent RGBA",
 ], "CHANGES must record parser and current-Xcode verification work")
 require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
@@ -282,6 +297,7 @@ completed_plans = [
     SWIFT5_PLAN,
     LABELED_API_PLAN,
     FAILABLE_PARSER_PLAN,
+    TRANSPARENT_ALPHA_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -321,6 +337,22 @@ require(failable_parser_statuses == ["status: completed"] and
         all(item in failable_parser_verification for item in failable_parser_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", failable_parser_verification, re.IGNORECASE) is None,
         "failable parser plan must record completed status and actual verification")
+transparent_alpha_statuses = re.findall(r"^status: .+$", transparent_alpha_plan, flags=re.MULTILINE)
+transparent_alpha_sections = transparent_alpha_plan.split("## Verification Completed\n", 1)
+transparent_alpha_verification = transparent_alpha_sections[1] if len(transparent_alpha_sections) == 2 else ""
+transparent_alpha_required_evidence = (
+    "All four Make gates passed",
+    "XCTest was skipped because `xcodebuild` is not",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "workflow YAML parsing",
+    "Three isolated hostile mutations were rejected",
+    "Hosted macOS XCTest and CodeQL evidence",
+)
+require(transparent_alpha_statuses == ["status: completed"] and
+        all(item in transparent_alpha_verification for item in transparent_alpha_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", transparent_alpha_verification, re.IGNORECASE) is None,
+        "transparent alpha plan must record completed status and actual local verification")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

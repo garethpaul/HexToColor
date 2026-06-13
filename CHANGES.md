@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Added hosted XCTest coverage proving fully transparent RGBA is a valid
+  failable parse and does not take the gray compatibility fallback.
 - Added public `parseHexColor(_:) -> UIColor?` so callers can distinguish
   malformed input from a valid gray color while both existing `toColor` call
   shapes retain their gray compatibility fallback.

@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Validated ASCII hex source characters before uppercasing so Unicode case
+  expansion cannot turn malformed input into accepted color data.
 - Added hosted XCTest coverage proving fully transparent RGBA is a valid
   failable parse and does not take the gray compatibility fallback.
 - Added public `parseHexColor(_:) -> UIColor?` so callers can distinguish

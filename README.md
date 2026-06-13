@@ -74,8 +74,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized
   through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
   invalid hex strings fall back to `UIColor.grayColor()`. Unsupported lengths
-  stay on the gray fallback path. Signed or otherwise non-hex characters are
-  rejected before scanner conversion. Tests cover both `0x` and `#0x` prefixes
+stay on the gray fallback path. Signed or otherwise non-hex characters are
+rejected before scanner conversion. ASCII source characters are validated
+before case normalization so Unicode expansion cannot create valid hex. Tests
+cover both `0x` and `#0x` prefixes
   at shorthand and full RGBA widths. Fully transparent RGBA remains a valid
   non-`nil` parse and does not take the gray compatibility fallback.
 

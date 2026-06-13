@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN_DIR = ROOT / "docs/plans"
 SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
 LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
+FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -113,6 +114,7 @@ required_files = [
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
     LABELED_API_PLAN,
+    FAILABLE_PARSER_PLAN,
 ]
 
 for required_file in required_files:
@@ -139,8 +141,10 @@ gitignore = read(".gitignore")
 workflow = read(".github/workflows/check.yml")
 swift5_plan = read(SWIFT5_PLAN)
 labeled_api_plan = read(LABELED_API_PLAN)
+failable_parser_plan = read(FAILABLE_PARSER_PLAN)
 
 require_all(hex_source, [
+    "public func parseHexColor(_ hex: String) -> UIColor?",
     "public func toColor(_ hex: String) -> UIColor",
     'trimmingCharacters(in: .whitespacesAndNewlines)',
     'colorString.hasPrefix("#")',
@@ -156,13 +160,16 @@ require_all(hex_source, [
     "scanner.isAtEnd",
     "alphaValue = colorValue & 0x000000FF",
     "alphaValue = 0xFF",
-    "return .gray",
+    "return nil",
+    "return parseHexColor(hex) ?? .gray",
     '@available(*, deprecated, renamed: "toColor(_:)")',
     "public func toColor(hex: String) -> UIColor",
     "return toColor(hex)",
 ], "Swift 5 parser contract is incomplete")
-require(hex_source.count("return .gray") == 3,
-        "all malformed parser paths must retain the gray fallback")
+require(hex_source.count("return nil") == 3,
+        "all malformed parser paths must return nil from the failable API")
+require(hex_source.count("?? .gray") == 1,
+        "only the compatibility API may apply the gray fallback")
 
 for test_name in [
     "testWhite",
@@ -177,6 +184,7 @@ for test_name in [
     "testFourDigitShorthandWithAlpha",
     "testEightDigitRGBAWithAlpha",
     "testDeprecatedLabeledAPICompatibility",
+    "testFailableParserDistinguishesValidGrayFromInvalidInput",
     "testTrimsWhitespaceAndNewlines",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
@@ -197,6 +205,12 @@ require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and
         "invalid-length tests must use unsupported lengths")
 require('toColor(hex: "#33669980")' in tests,
         "deprecated labeled API must be exercised by XCTest")
+require_all(tests, [
+    'parseHexColor("#808080")',
+    'XCTAssertNil(parseHexColor("#FF"))',
+    'XCTAssertNil(parseHexColor("#FFFFFG"))',
+    'XCTAssertNil(parseHexColor("-FFFFF"))',
+], "failable parser must distinguish valid gray from malformed input")
 
 require_all(build_script, [
     "set -eu",
@@ -233,20 +247,23 @@ require_all(readme.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
     "#0x", "0xrgba", "#0xrrggbbaa", "non-hex", "signed",
+    "parsehexcolor(_:)", "returns `nil`", "valid gray color",
     "persist checkout credentials", "real xctest suite",
 ], "README must document parser behavior and executable hosted verification")
 require_all(vision.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
     "#0x", "0x-prefixed shorthand and rgba", "non-hex", "real xctest suite",
+    "parsehexcolor(_:)", "explicit failure",
 ], "VISION must describe the current parser and hosted validation baseline")
 require_all(changes, [
     "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
     "make check", "whitespace", "0x", "shorthand", "alpha", "non-hex",
     "unsupported lengths", "#0x", "prefixed shorthand and RGBA", "Swift 5", "iOS 12",
     "real XCTest", "credential persistence disabled",
+    "parseHexColor(_:)", "valid gray color",
 ], "CHANGES must record parser and current-Xcode verification work")
-require_all(security, ["Security Policy", "privately", "malformed"],
+require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
 
 completed_plans = [
@@ -264,6 +281,7 @@ completed_plans = [
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
     LABELED_API_PLAN,
+    FAILABLE_PARSER_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -287,6 +305,22 @@ require(labeled_api_statuses == ["status: completed"] and
         all(item in labeled_api_verification for item in labeled_api_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", labeled_api_verification, re.IGNORECASE) is None,
         "labeled API plan must record completed status and actual verification")
+failable_parser_statuses = re.findall(r"^status: .+$", failable_parser_plan, flags=re.MULTILINE)
+failable_parser_sections = failable_parser_plan.split("## Verification Completed\n", 1)
+failable_parser_verification = failable_parser_sections[1] if len(failable_parser_sections) == 2 else ""
+failable_parser_required_evidence = (
+    "All four Make gates",
+    "XCTest was skipped because `xcodebuild` is",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "python3 -m py_compile scripts/check-baseline.py",
+    "git diff --check",
+    "Seven isolated hostile mutations",
+)
+require(failable_parser_statuses == ["status: completed"] and
+        all(item in failable_parser_verification for item in failable_parser_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", failable_parser_verification, re.IGNORECASE) is None,
+        "failable parser plan must record completed status and actual verification")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

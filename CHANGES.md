@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-13
+
+- Added public `parseHexColor(_:) -> UIColor?` so callers can distinguish
+  malformed input from a valid gray color while both existing `toColor` call
+  shapes retain their gray compatibility fallback.
+
 ## 2026-06-12
 
 - Added hosted XCTest coverage for the deprecated `toColor(hex:)` call shape

@@ -31,6 +31,8 @@ Current baseline:
 - Framework and test targets use Swift 5 with an iOS 12 deployment floor.
 - CocoaPods compatibility metadata matches Swift 5 and iOS 12 while release
   versioning remains unchanged until a future tag.
+- Swift Package Manager exposes the existing source and XCTest layout as an
+  iOS 12, Swift 5 library without replacing CocoaPods or the Xcode project.
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
 - Public `parseHexColor(_:)` returns `nil` when callers need explicit failure,
   while both existing `toColor` call shapes preserve the gray fallback.
@@ -67,7 +69,7 @@ Next priorities:
 
 - Align CocoaPods release metadata with the modernized source in a future tag
 - Add tests for additional case and malformed strings if supported
-- Clarify package-manager support if revived
+- Publish a future tag that includes the Swift package manifest
 
 Contribution rules:
 

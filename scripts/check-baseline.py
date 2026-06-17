@@ -16,6 +16,7 @@ FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
 TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-boundary.md"
 UNICODE_NORMALIZATION_PLAN = "docs/plans/2026-06-13-hextocolor-unicode-normalization-boundary.md"
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-13-location-independent-make.md"
+SWIFT_PACKAGE_PLAN = "docs/plans/2026-06-17-001-feat-swift-package-manager-plan.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -49,6 +50,7 @@ ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 lint: check
 
 test: check
+\t@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift package dump-package >/dev/null; else printf '%s\\n' "Skipping Swift package manifest: swift is not installed."; fi
 \t@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
 
 build: test
@@ -91,6 +93,7 @@ required_files = [
     "CHANGES.md",
     "LICENSE",
     "Makefile",
+    "Package.swift",
     "README.md",
     "SECURITY.md",
     "VISION.md",
@@ -123,6 +126,7 @@ required_files = [
     TRANSPARENT_ALPHA_PLAN,
     UNICODE_NORMALIZATION_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
+    SWIFT_PACKAGE_PLAN,
 ]
 
 for required_file in required_files:
@@ -139,6 +143,7 @@ hex_source = read("HexToColor/Hex.swift")
 tests = read("HexToColorTests/HexToColorTests.swift")
 build_script = read("build.sh")
 makefile = read("Makefile")
+package_manifest = read("Package.swift")
 podspec = read("HexToColor.podspec")
 project = read("HexToColor.xcodeproj/project.pbxproj")
 readme = read("README.md")
@@ -153,6 +158,7 @@ failable_parser_plan = read(FAILABLE_PARSER_PLAN)
 transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
 unicode_normalization_plan = read(UNICODE_NORMALIZATION_PLAN)
 location_independent_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
+swift_package_plan = read(SWIFT_PACKAGE_PLAN)
 
 require_all(hex_source, [
     "public func parseHexColor(_ hex: String) -> UIColor?",
@@ -265,6 +271,21 @@ require("SWIFT_VERSION = 2" not in project,
 
 require(makefile == EXPECTED_MAKEFILE,
         "Makefile must exactly preserve static and executable verification gates")
+require_all(package_manifest, [
+    "// swift-tools-version:5.9",
+    'name: "HexToColor"',
+    ".iOS(.v12)",
+    ".library(",
+    'targets: ["HexToColor"]',
+    ".target(",
+    'path: "HexToColor"',
+    'sources: ["Hex.swift"]',
+    ".testTarget(",
+    'dependencies: ["HexToColor"]',
+    'path: "HexToColorTests"',
+    'sources: ["HexToColorTests.swift"]',
+    "swiftLanguageVersions: [.v5]",
+], "Package.swift must preserve the iOS 12 Swift 5 library and XCTest graph")
 require_all(podspec, [
     's.platform     = :ios, "12.0"',
     's.swift_version = "5.0"',
@@ -302,6 +323,19 @@ require_all(changes, [
 ], "CHANGES must record parser and current-Xcode verification work")
 require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
+require_all(readme.lower(), [
+    "swift package manager",
+    "0.0.1` tag predates the manifest",
+    "swift package manifest parsing",
+], "README must document SwiftPM integration and the pre-manifest release boundary")
+require_all(vision, [
+    "Swift Package Manager exposes the existing source and XCTest layout",
+    "Publish a future tag that includes the Swift package manifest",
+], "VISION must record the SwiftPM distribution and release boundary")
+require_all(changes, [
+    "Swift Package Manager metadata",
+    "hosted manifest parsing through `make test`",
+], "CHANGES must record SwiftPM distribution and verification")
 
 completed_plans = [
     "docs/plans/2026-06-08-hextocolor-baseline.md",
@@ -322,6 +356,7 @@ completed_plans = [
     TRANSPARENT_ALPHA_PLAN,
     UNICODE_NORMALIZATION_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
+    SWIFT_PACKAGE_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -394,6 +429,24 @@ require(unicode_normalization_statuses == ["status: completed"] and
         all(item in unicode_normalization_verification for item in unicode_normalization_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", unicode_normalization_verification, re.IGNORECASE) is None,
         "Unicode normalization plan must record completed status and actual local verification")
+swift_package_statuses = re.findall(r"^status: .+$", swift_package_plan, flags=re.MULTILINE)
+swift_package_sections = swift_package_plan.split("## Verification Completed\n", 1)
+swift_package_verification = swift_package_sections[1] if len(swift_package_sections) == 2 else ""
+swift_package_required_evidence = (
+    "All four Make gates passed",
+    "external-directory `make -f",
+    "Swift manifest parsing was skipped because `swift` is not installed locally",
+    "XCTest was skipped because `xcodebuild` is not installed locally",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "python3 -m py_compile scripts/check-baseline.py",
+    "git diff --check",
+    "Six isolated hostile mutations were rejected",
+)
+require(swift_package_statuses == ["status: completed"] and
+        all(item in swift_package_verification for item in swift_package_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", swift_package_verification, re.IGNORECASE) is None,
+        "Swift package plan must record completed status and actual local verification")
 location_independent_make_statuses = re.findall(r"^status: .+$", location_independent_make_plan, flags=re.MULTILINE)
 location_independent_make_sections = location_independent_make_plan.split("## Verification Completed\n", 1)
 location_independent_make_verification = location_independent_make_sections[1] if len(location_independent_make_sections) == 2 else ""

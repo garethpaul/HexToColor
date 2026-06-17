@@ -49,6 +49,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Open `HexToColor.xcodeproj` in Xcode, choose the app or sample scheme, and run it on the matching simulator/device.
+- Current revisions that contain `Package.swift` can be added through Xcode's
+  Swift Package Manager integration using this repository URL. The existing
+  `0.0.1` tag predates the manifest, so select a later revision or future tag.
 - Run `make test` or `./build.sh` when the required platform toolchain is
   installed. The script discovers an available iPhone simulator unless
   `IOS_DESTINATION` or `IOS_SIMULATOR_NAME` is set.
@@ -62,7 +65,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make lint` or `make check` for static parser, plist, podspec,
   build-script, and Xcode project guardrails. Run `make test` or `make build`
-  for those checks plus the XCTest suite when Xcode is installed.
+  for those checks plus Swift package manifest parsing when Swift is installed
+  and the XCTest suite when Xcode is installed.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
 - Use `parseHexColor(_:)` when malformed input must be distinguishable from a
   valid gray color; it returns `nil` on failure. The compatibility
@@ -123,6 +127,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   coverage of the deprecated labeled API.
 - See `docs/plans/2026-06-09-make-gate-aliases.md` for local verification
   target guardrails.
+- See `docs/plans/2026-06-17-001-feat-swift-package-manager-plan.md` for the
+  Swift Package Manager product, target, and hosted manifest-validation contract.
 
 ## Contributing
 

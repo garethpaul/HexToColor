@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Added Swift Package Manager metadata for the existing iOS 12, Swift 5 source
+  and XCTest layout, with hosted manifest parsing through `make test`.
+
 ## 2026-06-13
 
 - Made every Make verification target derive the checkout root so parser and

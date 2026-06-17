@@ -2,7 +2,7 @@
 title: "feat: Add Swift Package Manager distribution"
 type: feat
 date: 2026-06-17
-status: planned
+status: completed
 ---
 
 # feat: Add Swift Package Manager distribution
@@ -134,8 +134,8 @@ stale or malformed package manifest.
   remains the executable package-manifest authority.
 - A custom-path manifest can silently include unintended files unless sources
   are explicit and mutation-tested.
-- Raising the tools version too far would unnecessarily exclude older Xcode
-  consumers; the manifest should use the oldest version needed by its APIs.
+- The Swift 5.9 tools declaration requires a maintained Xcode release while
+  preserving Swift 5 source mode and the library's iOS 12 deployment floor.
 
 ---
 
@@ -149,3 +149,32 @@ stale or malformed package manifest.
   source lists.
 - [Swift packages overview](https://www.swift.org/packages/) describes SwiftPM
   as the native package distribution path integrated with current Xcode.
+
+---
+
+## Work Completed
+
+- Added one automatic `HexToColor` library product over the existing
+  `HexToColor/Hex.swift` source and one test target over the existing XCTest
+  file, with an iOS 12 platform floor and Swift 5 language mode.
+- Extended `make test` to parse the package manifest when Swift is available,
+  while preserving the existing Xcode availability check and every Make alias.
+- Added maintained static contracts for the package graph, Make integration,
+  consumer guidance, release boundary, changelog, and completed plan evidence.
+
+## Verification Completed
+
+- All four Make gates passed from the repository root: `make lint`,
+  `make test`, `make build`, and `make check`.
+- The external-directory `make -f "$REPOSITORY/Makefile" check` invocation
+  passed, preserving location-independent validation.
+- Swift manifest parsing was skipped because `swift` is not installed locally;
+  the hosted macOS Make gate executes the same command when Swift is present.
+- XCTest was skipped because `xcodebuild` is not installed locally; parser and
+  test behavior were not modified by this distribution-only change.
+- `sh -n build.sh`, `ruby -c HexToColor.podspec`,
+  `python3 -m py_compile scripts/check-baseline.py`, and `git diff --check`
+  passed.
+- Six isolated hostile mutations were rejected for the library product, iOS
+  floor, source path, Swift language mode, Make manifest command, and README
+  release-boundary guidance.

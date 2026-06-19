@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import sys
@@ -11,6 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 PLAN_DIR = ROOT / "docs/plans"
 SWIFT5_PLAN = "docs/plans/2026-06-12-swift5-xctest-modernization.md"
 LABELED_API_PLAN = "docs/plans/2026-06-12-labeled-api-runtime-coverage.md"
+FAILABLE_PARSER_PLAN = "docs/plans/2026-06-13-hextocolor-failable-parser.md"
+TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-boundary.md"
+UNICODE_NORMALIZATION_PLAN = "docs/plans/2026-06-13-hextocolor-unicode-normalization-boundary.md"
+LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-13-location-independent-make.md"
+SWIFT_PACKAGE_PLAN = "docs/plans/2026-06-17-001-feat-swift-package-manager-plan.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -39,15 +45,18 @@ jobs:
 """
 EXPECTED_MAKEFILE = """.PHONY: build check lint test
 
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 lint: check
 
 test: check
-\t@if command -v xcodebuild >/dev/null 2>&1; then ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
+\t@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift test; else printf '%s\\n' "Skipping Swift package tests: swift is not installed."; fi
+\t@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
 
 build: test
 
 check:
-\tpython3 scripts/check-baseline.py
+\t@python3 "$(ROOT)/scripts/check-baseline.py"
 """
 
 
@@ -84,6 +93,7 @@ required_files = [
     "CHANGES.md",
     "LICENSE",
     "Makefile",
+    "Package.swift",
     "README.md",
     "SECURITY.md",
     "VISION.md",
@@ -112,6 +122,11 @@ required_files = [
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
     LABELED_API_PLAN,
+    FAILABLE_PARSER_PLAN,
+    TRANSPARENT_ALPHA_PLAN,
+    UNICODE_NORMALIZATION_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
+    SWIFT_PACKAGE_PLAN,
 ]
 
 for required_file in required_files:
@@ -128,6 +143,7 @@ hex_source = read("HexToColor/Hex.swift")
 tests = read("HexToColorTests/HexToColorTests.swift")
 build_script = read("build.sh")
 makefile = read("Makefile")
+package_manifest = read("Package.swift")
 podspec = read("HexToColor.podspec")
 project = read("HexToColor.xcodeproj/project.pbxproj")
 readme = read("README.md")
@@ -137,30 +153,42 @@ changes = read("CHANGES.md")
 gitignore = read(".gitignore")
 workflow = read(".github/workflows/check.yml")
 swift5_plan = read(SWIFT5_PLAN)
+labeled_api_plan = read(LABELED_API_PLAN)
+failable_parser_plan = read(FAILABLE_PARSER_PLAN)
+transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
+unicode_normalization_plan = read(UNICODE_NORMALIZATION_PLAN)
+location_independent_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
+swift_package_plan = read(SWIFT_PACKAGE_PLAN)
 
 require_all(hex_source, [
-    "public func toColor(_ hex: String) -> UIColor",
-    'trimmingCharacters(in: .whitespacesAndNewlines)',
-    'colorString.hasPrefix("#")',
-    'colorString.hasPrefix("0X")',
-    "colorString.removeFirst()",
-    "colorString.removeFirst(2)",
-    "colorString.count == 3 || colorString.count == 4",
-    'colorString.map { "\\($0)\\($0)" }.joined()',
-    "colorString.count == 6 || colorString.count == 8",
-    'CharacterSet(charactersIn: "0123456789ABCDEF")',
-    "allowedHexCharacters.inverted",
-    "scanner.scanHexInt64(&colorValue)",
-    "scanner.isAtEnd",
-    "alphaValue = colorValue & 0x000000FF",
-    "alphaValue = 0xFF",
-    "return .gray",
+    "#if canImport(UIKit)",
+    "#elseif canImport(AppKit)",
+    "public typealias HexColor = UIColor",
+    "public typealias HexColor = NSColor",
+    "private let trimmedASCIIWhitespace: Set<UInt8> = [0x09, 0x0A, 0x0D, 0x20]",
+    "private func hexNibble(_ byte: UInt8) -> UInt8?",
+    "case 0x30...0x39:",
+    "case 0x41...0x46:",
+    "case 0x61...0x66:",
+    "public func parseHexColor(_ hex: String) -> HexColor?",
+    "var bytes = hex.utf8[...]",
+    "digitCount == 3 || digitCount == 4 || digitCount == 6 || digitCount == 8",
+    "guard let digit = hexNibble(byte)",
+    "return digits[index] * 0x11",
+    "return digits[index * 2] << 4 | digits[index * 2 + 1]",
+    "alpha: digitCount == 4 || digitCount == 8 ? component(at: 3) : 0xFF",
+    "return nil",
+    "return parseHexColor(hex) ?? .gray",
     '@available(*, deprecated, renamed: "toColor(_:)")',
-    "public func toColor(hex: String) -> UIColor",
+    "public func toColor(hex: String) -> HexColor",
     "return toColor(hex)",
 ], "Swift 5 parser contract is incomplete")
-require(hex_source.count("return .gray") == 3,
-        "all malformed parser paths must retain the gray fallback")
+require(not any(token in hex_source for token in ["Scanner", "CharacterSet", "uppercased()", "trimmingCharacters"]),
+        "parser must not normalize Unicode or delegate exact grammar to Scanner")
+require(hex_source.count("return nil") == 3,
+        "all malformed parser paths must return nil from the failable API")
+require(hex_source.count("?? .gray") == 1,
+        "only the compatibility API may apply the gray fallback")
 
 for test_name in [
     "testWhite",
@@ -175,7 +203,16 @@ for test_name in [
     "testFourDigitShorthandWithAlpha",
     "testEightDigitRGBAWithAlpha",
     "testDeprecatedLabeledAPICompatibility",
+    "testFailableParserDistinguishesValidGrayFromInvalidInput",
+    "testTransparentRGBAIsValidAtBothWidths",
+    "testUnicodeCaseExpansionDoesNotCreateValidHex",
     "testTrimsWhitespaceAndNewlines",
+    "testOnlyDocumentedASCIIWhitespaceIsTrimmed",
+    "testRejectsUnicodeLookalikesAndControlsBeforeParsing",
+    "testRejectsPartialOverflowAndMalformedPrefixes",
+    "testRGBAUsesTrailingAlphaByte",
+    "testAllByteValuesRoundTripThroughRGBAParser",
+    "testAcceptedPrefixWidthAndCaseMatrix",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
     "testSignedHexReturnsGray",
@@ -184,7 +221,7 @@ for test_name in [
 for prefixed_alpha_input in ["0xF0A8", "0x33669980", "#0xF0A8", "#0x33669980"]:
     require(f'toColor("{prefixed_alpha_input}")' in tests,
             f"missing prefixed alpha input coverage: {prefixed_alpha_input}")
-require_all(tests, ["func assertColor(_ color: UIColor", "accuracy:"],
+require_all(tests, ["func assertColor(_ color: HexColor", "accuracy:"],
             "XCTest helpers must use current Swift assertion syntax")
 require("XCTAssertEqualWithAccuracy" not in tests,
         "Swift 2 XCTest assertion syntax must stay removed")
@@ -195,6 +232,33 @@ require('toColor("#FFFF")' not in tests and 'toColor("#FF")' in tests and
         "invalid-length tests must use unsupported lengths")
 require('toColor(hex: "#33669980")' in tests,
         "deprecated labeled API must be exercised by XCTest")
+require_all(tests, [
+    'parseHexColor("#808080")',
+    'XCTAssertNil(parseHexColor("#FF"))',
+    'XCTAssertNil(parseHexColor("#FFFFFG"))',
+    'XCTAssertNil(parseHexColor("-FFFFF"))',
+], "failable parser must distinguish valid gray from malformed input")
+require_all(tests, [
+    'for input in ["#0000", "#00000000"]',
+    "let parsed = parseHexColor(input)",
+    "XCTAssertNotNil(parsed)",
+    "assertColor(toColor(input)",
+], "transparent RGBA must remain a successful failable and compatibility parse")
+require(tests.count("alpha: 0.0") == 2,
+        "transparent RGBA coverage must assert zero alpha for both parser paths")
+require('XCTAssertNil(parseHexColor("#ﬀ0000"))' in tests and
+        'assertColor(toColor("#ﬀ0000")' in tests,
+        "Unicode case-expansion input must fail explicitly and use compatibility gray")
+require_all(tests, [
+    '"\\u{00A0}#336699\\u{00A0}"',
+    '"#ＦＦ0000"',
+    '"#А00000"',
+    '"#FF\\u{0000}0000"',
+    '"#FFFFFFFFFFFFFFFF"',
+    'parseHexColor("#01020304")',
+    "for value in 0...255",
+    'for prefix in ["", "#", "0x", "0X", "#0x", "#0X"]',
+], "tests must exercise Unicode, control, overflow, alpha-order, and byte-range boundaries")
 
 require_all(build_script, [
     "set -eu",
@@ -217,6 +281,23 @@ require("SWIFT_VERSION = 2" not in project,
 
 require(makefile == EXPECTED_MAKEFILE,
         "Makefile must exactly preserve static and executable verification gates")
+require_all(package_manifest, [
+    "// swift-tools-version:5.9",
+    'name: "HexToColor"',
+    ".iOS(.v12)",
+    ".macOS(.v10_13)",
+    ".library(",
+    'targets: ["HexToColor"]',
+    ".target(",
+    'path: "HexToColor"',
+    'exclude: ["Info.plist"]',
+    'sources: ["Hex.swift"]',
+    ".testTarget(",
+    'dependencies: ["HexToColor"]',
+    'path: "HexToColorTests"',
+    'sources: ["HexToColorTests.swift"]',
+    "swiftLanguageVersions: [.v5]",
+], "Package.swift must preserve the iOS 12/macOS 10.13 Swift 5 library and XCTest graph")
 require_all(podspec, [
     's.platform     = :ios, "12.0"',
     's.swift_version = "5.0"',
@@ -230,22 +311,47 @@ require(workflow == EXPECTED_WORKFLOW,
 require_all(readme.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
-    "#0x", "0xrgba", "#0xrrggbbaa", "non-hex", "signed",
+    "#0x", "rgb, rgba, rrggbb, and rrggbbaa", "non-hex", "signed",
+    "parsehexcolor(_:)", "returns `nil`", "valid gray color",
+    "fully transparent rgba",
+    "ascii space, tab, carriage return, and line feed", "appkit", "swift package tests",
+    "accessibility labels",
     "persist checkout credentials", "real xctest suite",
+    "absolute makefile path", "any working directory",
 ], "README must document parser behavior and executable hosted verification")
 require_all(vision.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
     "#0x", "0x-prefixed shorthand and rgba", "non-hex", "real xctest suite",
+    "parsehexcolor(_:)", "explicit failure",
+    "fully transparent rgba",
+    "ascii space, tab, carriage return, and line feed", "appkit", "swift package tests",
 ], "VISION must describe the current parser and hosted validation baseline")
 require_all(changes, [
     "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
     "make check", "whitespace", "0x", "shorthand", "alpha", "non-hex",
     "unsupported lengths", "#0x", "prefixed shorthand and RGBA", "Swift 5", "iOS 12",
     "real XCTest", "credential persistence disabled",
+    "parseHexColor(_:)", "valid gray color",
+    "fully transparent RGBA",
+    "Make verification target", "external directories",
+    "AppKit", "Swift package tests", "Unicode whitespace",
 ], "CHANGES must record parser and current-Xcode verification work")
-require_all(security, ["Security Policy", "privately", "malformed"],
+require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
+require_all(readme.lower(), [
+    "swift package manager",
+    "0.0.1` tag predates the manifest",
+    "swift package tests",
+], "README must document tested SwiftPM integration and the pre-manifest release boundary")
+require_all(vision, [
+    "Swift Package Manager exposes the existing source and XCTest layout",
+    "Publish a future tag that includes the Swift package manifest",
+], "VISION must record the SwiftPM distribution and release boundary")
+require_all(changes, [
+    "Swift Package Manager metadata",
+    "hosted manifest parsing through `make test`",
+], "CHANGES must record SwiftPM distribution and verification")
 
 completed_plans = [
     "docs/plans/2026-06-08-hextocolor-baseline.md",
@@ -262,6 +368,11 @@ completed_plans = [
     "docs/plans/2026-06-10-hosted-project-validation.md",
     SWIFT5_PLAN,
     LABELED_API_PLAN,
+    FAILABLE_PARSER_PLAN,
+    TRANSPARENT_ALPHA_PLAN,
+    UNICODE_NORMALIZATION_PLAN,
+    LOCATION_INDEPENDENT_MAKE_PLAN,
+    SWIFT_PACKAGE_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
@@ -270,6 +381,112 @@ require_all(swift5_plan, [
     "make test", "Swift 5", "iOS 12", "persisted checkout credentials",
     "simulator discovery", "git diff --check",
 ], "Swift 5 modernization plan must record its completed contract")
+labeled_api_statuses = re.findall(r"^status: .+$", labeled_api_plan, flags=re.MULTILINE)
+labeled_api_sections = labeled_api_plan.split("## Verification Completed\n", 1)
+labeled_api_verification = labeled_api_sections[1] if len(labeled_api_sections) == 2 else ""
+labeled_api_required_evidence = (
+    "All four Make gates",
+    "push run `27393807170`",
+    "pull-request run `27393810000`",
+    "push run `27393956378`",
+    "CodeQL setup run `27402321858`",
+    "mutation removing the labeled invocation",
+)
+require(labeled_api_statuses == ["status: completed"] and
+        all(item in labeled_api_verification for item in labeled_api_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", labeled_api_verification, re.IGNORECASE) is None,
+        "labeled API plan must record completed status and actual verification")
+failable_parser_statuses = re.findall(r"^status: .+$", failable_parser_plan, flags=re.MULTILINE)
+failable_parser_sections = failable_parser_plan.split("## Verification Completed\n", 1)
+failable_parser_verification = failable_parser_sections[1] if len(failable_parser_sections) == 2 else ""
+failable_parser_required_evidence = (
+    "All four Make gates",
+    "XCTest was skipped because `xcodebuild` is",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "python3 -m py_compile scripts/check-baseline.py",
+    "git diff --check",
+    "Seven isolated hostile mutations",
+)
+require(failable_parser_statuses == ["status: completed"] and
+        all(item in failable_parser_verification for item in failable_parser_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", failable_parser_verification, re.IGNORECASE) is None,
+        "failable parser plan must record completed status and actual verification")
+transparent_alpha_statuses = re.findall(r"^status: .+$", transparent_alpha_plan, flags=re.MULTILINE)
+transparent_alpha_sections = transparent_alpha_plan.split("## Verification Completed\n", 1)
+transparent_alpha_verification = transparent_alpha_sections[1] if len(transparent_alpha_sections) == 2 else ""
+transparent_alpha_required_evidence = (
+    "All four Make gates passed",
+    "XCTest was skipped because `xcodebuild` is not",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "workflow YAML parsing",
+    "Three isolated hostile mutations were rejected",
+    "Hosted macOS XCTest and CodeQL evidence",
+)
+require(transparent_alpha_statuses == ["status: completed"] and
+        all(item in transparent_alpha_verification for item in transparent_alpha_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", transparent_alpha_verification, re.IGNORECASE) is None,
+        "transparent alpha plan must record completed status and actual local verification")
+unicode_normalization_statuses = re.findall(r"^status: .+$", unicode_normalization_plan, flags=re.MULTILINE)
+unicode_normalization_sections = unicode_normalization_plan.split("## Verification Completed\n", 1)
+unicode_normalization_verification = unicode_normalization_sections[1] if len(unicode_normalization_sections) == 2 else ""
+unicode_normalization_required_evidence = (
+    "All four Make gates passed",
+    "XCTest was skipped because `xcodebuild` is not installed locally",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "pre-validation uppercasing mutation failed",
+    "Unicode regression removal mutation failed",
+    "ASCII character-set weakening mutation failed",
+    "hosted macOS XCTest and CodeQL snapshot",
+)
+require(unicode_normalization_statuses == ["status: completed"] and
+        all(item in unicode_normalization_verification for item in unicode_normalization_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", unicode_normalization_verification, re.IGNORECASE) is None,
+        "Unicode normalization plan must record completed status and actual local verification")
+swift_package_statuses = re.findall(r"^status: .+$", swift_package_plan, flags=re.MULTILINE)
+swift_package_sections = swift_package_plan.split("## Verification Completed\n", 1)
+swift_package_verification = swift_package_sections[1] if len(swift_package_sections) == 2 else ""
+swift_package_required_evidence = (
+    "All four Make gates passed",
+    "external-directory `make -f",
+    "Swift manifest parsing was skipped because `swift` is not installed locally",
+    "XCTest was skipped because `xcodebuild` is not installed locally",
+    "sh -n build.sh",
+    "ruby -c HexToColor.podspec",
+    "python3 -m py_compile scripts/check-baseline.py",
+    "git diff --check",
+    "Six isolated hostile mutations were rejected",
+)
+require(swift_package_statuses == ["status: completed"] and
+        all(item in swift_package_verification for item in swift_package_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", swift_package_verification, re.IGNORECASE) is None,
+        "Swift package plan must record completed status and actual local verification")
+location_independent_make_statuses = re.findall(r"^status: .+$", location_independent_make_plan, flags=re.MULTILINE)
+location_independent_make_sections = location_independent_make_plan.split("## Verification Completed\n", 1)
+location_independent_make_verification = location_independent_make_sections[1] if len(location_independent_make_sections) == 2 else ""
+location_independent_make_required_evidence = (
+    "Root and external-directory Make gates passed",
+    "root-derivation mutation failed",
+    "checker-invocation mutation failed",
+    "XCTest-script mutation failed",
+    "plan-status mutation failed",
+    "plan-evidence mutation failed",
+    "documentation mutation failed",
+)
+require(location_independent_make_statuses == ["status: completed"] and
+        all(item in location_independent_make_verification for item in location_independent_make_required_evidence) and
+        re.search(r"\b(?:pending|todo|tbd|not run)\b", location_independent_make_verification, re.IGNORECASE) is None,
+        "location-independent Make plan must record completed status and actual verification")
+require_all(readme.lower(), ["utf-8 bytes", "unicode normalization", "homoglyph", "control"],
+            "README must document the exact pre-normalization grammar")
+require_all(security.lower(), ["ascii hex", "unicode normalization", "control characters"],
+            "security guidance must document the exact parser boundary")
+require("Parse only ASCII hex source bytes without Unicode case normalization" in vision and
+        "Unicode whitespace" in changes and
+        "before Unicode normalization" in read("AGENTS.md"),
+        "project guidance must preserve the exact Unicode rejection boundary")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

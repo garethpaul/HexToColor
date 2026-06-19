@@ -3,8 +3,8 @@
 This document explains the current state and direction of the project.
 Project overview and developer docs: [`README.md`](README.md)
 
-HexToColor is a small iOS utility library that provides convenience methods for
-creating `UIColor` values from hex strings.
+HexToColor is a small Apple-platform utility library that provides convenience
+methods for creating UIKit or AppKit color values from hex strings.
 
 The repository is useful as a compact Swift/Objective-C library sample with a
 podspec, tests, and Xcode project setup. Project context lives in
@@ -16,7 +16,7 @@ The current focus is:
 
 Priority:
 
-- Preserve the hex-to-UIColor conversion API
+- Preserve the hex-to-UIColor conversion API while sharing parser behavior with AppKit
 - Keep podspec and Xcode project metadata aligned
 - Maintain test coverage for valid and invalid color inputs
 - Avoid adding broader color-system behavior without a clear need
@@ -31,13 +31,20 @@ Current baseline:
 - Framework and test targets use Swift 5 with an iOS 12 deployment floor.
 - CocoaPods compatibility metadata matches Swift 5 and iOS 12 while release
   versioning remains unchanged until a future tag.
+- Swift Package Manager exposes the existing source and XCTest layout as an
+  iOS 12/macOS 10.13 Swift 5 library without replacing CocoaPods or the Xcode
+  project; Swift package tests execute the AppKit path on macOS.
 - Invalid hex strings, including partial `scanHexInt` parses, return gray.
+- Public `parseHexColor(_:)` returns `nil` when callers need explicit failure,
+  while both existing `toColor` call shapes preserve the gray fallback.
+- Parse only ASCII hex source bytes without Unicode case normalization.
 - Alpha parsing remains characterized for both accepted prefixes at shorthand
   and full RGBA widths.
 - The package exposes public `toColor(_:)` and retains deprecated
   `toColor(hex:)` compatibility for labeled callers, with the compatibility
   path executed by hosted XCTest.
-- Surrounding whitespace and newlines are trimmed before parsing.
+- Surrounding ASCII space, tab, carriage return, and line feed are trimmed;
+  Unicode whitespace and other controls are rejected.
 - Valid hash-prefixed and lowercase six-character values have focused tests.
 - `0x`-prefixed six-character RGB values are supported without changing the
   invalid-input fallback.
@@ -47,6 +54,7 @@ Current baseline:
   six-character validation path.
 - Four-character RGBA shorthand and eight-character RGBA values preserve alpha
   while RGB values remain opaque by default.
+- Fully transparent RGBA remains valid input rather than gray fallback.
 - 0x-prefixed shorthand and RGBA values normalize before shorthand expansion
   and alpha parsing.
 - Unsupported lengths still return gray now that four-character RGBA shorthand
@@ -63,7 +71,7 @@ Next priorities:
 
 - Align CocoaPods release metadata with the modernized source in a future tag
 - Add tests for additional case and malformed strings if supported
-- Clarify package-manager support if revived
+- Publish a future tag that includes the Swift package manifest
 
 Contribution rules:
 

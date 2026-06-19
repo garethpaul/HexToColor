@@ -1,5 +1,34 @@
 # Changes
 
+## 2026-06-19
+
+- Replaced Foundation scanner and Unicode-wide trimming with an exact UTF-8
+  grammar that trims only ASCII space, tab, carriage return, and line feed and
+  rejects Unicode whitespace, controls, homoglyphs, partial parses, and overflow.
+- Added AppKit support through the shared `HexColor` type alias while preserving
+  the existing UIKit function call shapes and gray compatibility fallback.
+- Upgraded hosted verification from manifest parsing to executable Swift package tests,
+  removed unhandled plist warnings, and retained simulator XCTest.
+- Added byte-range property coverage plus focused alpha-order, malformed-prefix,
+  Unicode, control-character, and whitespace mutation cases.
+
+## 2026-06-17
+
+- Added Swift Package Manager metadata for the existing iOS 12, Swift 5 source
+  and XCTest layout, with hosted manifest parsing through `make test`.
+
+## 2026-06-13
+
+- Made every Make verification target derive the checkout root so parser and
+  XCTest gates work from external directories.
+- Validated ASCII hex source characters before uppercasing so Unicode case
+  expansion cannot turn malformed input into accepted color data.
+- Added hosted XCTest coverage proving fully transparent RGBA is a valid
+  failable parse and does not take the gray compatibility fallback.
+- Added public `parseHexColor(_:) -> UIColor?` so callers can distinguish
+  malformed input from a valid gray color while both existing `toColor` call
+  shapes retain their gray compatibility fallback.
+
 ## 2026-06-12
 
 - Added hosted XCTest coverage for the deprecated `toColor(hex:)` call shape

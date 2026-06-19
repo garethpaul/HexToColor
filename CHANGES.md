@@ -1,5 +1,17 @@
 # Changes
 
+## 2026-06-19
+
+- Replaced Foundation scanner and Unicode-wide trimming with an exact UTF-8
+  grammar that trims only ASCII space, tab, carriage return, and line feed and
+  rejects Unicode whitespace, controls, homoglyphs, partial parses, and overflow.
+- Added AppKit support through the shared `HexColor` type alias while preserving
+  the existing UIKit function call shapes and gray compatibility fallback.
+- Upgraded hosted verification from manifest parsing to executable Swift package tests,
+  removed unhandled plist warnings, and retained simulator XCTest.
+- Added byte-range property coverage plus focused alpha-order, malformed-prefix,
+  Unicode, control-character, and whitespace mutation cases.
+
 ## 2026-06-17
 
 - Added Swift Package Manager metadata for the existing iOS 12, Swift 5 source

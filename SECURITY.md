@@ -41,8 +41,9 @@ Use `parseHexColor(_:)` at validation boundaries so malformed input is reported
 as `nil` instead of being indistinguishable from a valid gray color. The
 existing `toColor` APIs retain their compatibility fallback.
 
-Validate source characters as ASCII hex before Unicode case normalization;
-case expansion must not transform non-ASCII input into accepted color data.
+Accept only ASCII hex digits and the documented surrounding ASCII whitespace.
+Reject Unicode whitespace, homoglyphs, and control characters directly from
+UTF-8 bytes before Unicode normalization can transform input.
 
 ## Dependency and Supply Chain Security
 

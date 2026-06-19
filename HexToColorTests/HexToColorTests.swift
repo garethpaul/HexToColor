@@ -8,16 +8,27 @@
 
 import XCTest
 
+#if canImport(AppKit)
+import AppKit
+#endif
+
 @testable import HexToColor
 
 class HexToColorTests: XCTestCase {
-    func assertColor(_ color: UIColor, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
+    func assertColor(_ color: HexColor, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) {
         var actualRed: CGFloat = 0
         var actualGreen: CGFloat = 0
         var actualBlue: CGFloat = 0
         var actualAlpha: CGFloat = 0
 
+#if canImport(UIKit)
         XCTAssertTrue(color.getRed(&actualRed, green: &actualGreen, blue: &actualBlue, alpha: &actualAlpha))
+#else
+        guard let color = color.usingColorSpace(.sRGB) else {
+            return XCTFail("Expected an sRGB-compatible color")
+        }
+        color.getRed(&actualRed, green: &actualGreen, blue: &actualBlue, alpha: &actualAlpha)
+#endif
         XCTAssertEqual(red, actualRed, accuracy: 0.001)
         XCTAssertEqual(green, actualGreen, accuracy: 0.001)
         XCTAssertEqual(blue, actualBlue, accuracy: 0.001)
@@ -117,6 +128,106 @@ class HexToColorTests: XCTestCase {
     func testTrimsWhitespaceAndNewlines() {
         let color = toColor(" \n#336699\t")
         assertColor(color, red: 51.0 / 255.0, green: 102.0 / 255.0, blue: 153.0 / 255.0, alpha: 1.0)
+    }
+
+    func testOnlyDocumentedASCIIWhitespaceIsTrimmed() {
+        XCTAssertNotNil(parseHexColor(" \t\r\n#336699\n\r\t "))
+
+        for input in [
+            "\u{00A0}#336699\u{00A0}",
+            "\u{000B}#336699\u{000B}",
+            "\u{000C}#336699\u{000C}",
+            "\u{2028}#336699\u{2028}",
+        ] {
+            let scalars = input.unicodeScalars
+                .map { String(format: "U+%04X", $0.value) }
+                .joined(separator: " ")
+            XCTAssertNil(parseHexColor(input), "Unexpectedly accepted \(scalars)")
+        }
+    }
+
+    func testRejectsUnicodeLookalikesAndControlsBeforeParsing() {
+        for input in [
+            "#ＦＦ0000",
+            "#А00000",
+            "#ﬀ0000",
+            "#FF\u{200B}0000",
+            "#FF\u{0000}0000",
+            "#FF 0000",
+        ] {
+            XCTAssertNil(parseHexColor(input))
+        }
+    }
+
+    func testRejectsPartialOverflowAndMalformedPrefixes() {
+        for input in [
+            "#123456tail",
+            "#123456789",
+            "#FFFFFFFFFFFFFFFF",
+            "#0x",
+            "0x#123456",
+            "##123456",
+            "#0x0x123456",
+        ] {
+            XCTAssertNil(parseHexColor(input))
+        }
+    }
+
+    func testRGBAUsesTrailingAlphaByte() {
+        guard let color = parseHexColor("#01020304") else {
+            return XCTFail("Expected valid RGBA color")
+        }
+
+        assertColor(color, red: 1.0 / 255.0, green: 2.0 / 255.0, blue: 3.0 / 255.0, alpha: 4.0 / 255.0)
+    }
+
+    func testAllByteValuesRoundTripThroughRGBAParser() {
+        for value in 0...255 {
+            let red = value
+            let green = 255 - value
+            let blue = value ^ 0xA5
+            let alpha = (value &* 73) & 0xFF
+            let input = String(format: "#%02X%02X%02X%02X", red, green, blue, alpha)
+
+            guard let color = parseHexColor(input) else {
+                XCTFail("Expected \(input) to parse")
+                continue
+            }
+
+            assertColor(
+                color,
+                red: CGFloat(red) / 255.0,
+                green: CGFloat(green) / 255.0,
+                blue: CGFloat(blue) / 255.0,
+                alpha: CGFloat(alpha) / 255.0
+            )
+        }
+    }
+
+    func testAcceptedPrefixWidthAndCaseMatrix() {
+        let cases: [(payload: String, red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat)] = [
+            ("F0a", 1.0, 0.0, 170.0 / 255.0, 1.0),
+            ("F0a8", 1.0, 0.0, 170.0 / 255.0, 136.0 / 255.0),
+            ("336a9F", 51.0 / 255.0, 106.0 / 255.0, 159.0 / 255.0, 1.0),
+            ("336a9F80", 51.0 / 255.0, 106.0 / 255.0, 159.0 / 255.0, 128.0 / 255.0),
+        ]
+
+        for prefix in ["", "#", "0x", "0X", "#0x", "#0X"] {
+            for testCase in cases {
+                let input = prefix + testCase.payload
+                guard let color = parseHexColor(input) else {
+                    XCTFail("Expected \(input) to parse")
+                    continue
+                }
+                assertColor(
+                    color,
+                    red: testCase.red,
+                    green: testCase.green,
+                    blue: testCase.blue,
+                    alpha: testCase.alpha
+                )
+            }
+        }
     }
 
     func testInvalidLengthReturnsGray() {

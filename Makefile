@@ -5,7 +5,7 @@ ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 lint: check
 
 test: check
-	@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift package dump-package >/dev/null; else printf '%s\n' "Skipping Swift package manifest: swift is not installed."; fi
+	@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift test; else printf '%s\n' "Skipping Swift package tests: swift is not installed."; fi
 	@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\n' "Skipping XCTest: xcodebuild is not installed."; fi
 
 build: test

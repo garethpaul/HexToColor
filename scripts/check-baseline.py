@@ -50,7 +50,7 @@ ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 lint: check
 
 test: check
-\t@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift package dump-package >/dev/null; else printf '%s\\n' "Skipping Swift package manifest: swift is not installed."; fi
+\t@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift test; else printf '%s\\n' "Skipping Swift package tests: swift is not installed."; fi
 \t@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
 
 build: test
@@ -161,29 +161,30 @@ location_independent_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
 swift_package_plan = read(SWIFT_PACKAGE_PLAN)
 
 require_all(hex_source, [
-    "public func parseHexColor(_ hex: String) -> UIColor?",
-    "public func toColor(_ hex: String) -> UIColor",
-    'var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines)',
-    'colorString.hasPrefix("#")',
-    'colorString.hasPrefix("0x") || colorString.hasPrefix("0X")',
-    "colorString.removeFirst()",
-    "colorString.removeFirst(2)",
-    "colorString.count == 3 || colorString.count == 4",
-    'colorString.map { "\\($0)\\($0)" }.joined()',
-    "colorString.count == 6 || colorString.count == 8",
-    'CharacterSet(charactersIn: "0123456789ABCDEFabcdef")',
-    "allowedHexCharacters.inverted",
-    "colorString = colorString.uppercased()",
-    "scanner.scanHexInt64(&colorValue)",
-    "scanner.isAtEnd",
-    "alphaValue = colorValue & 0x000000FF",
-    "alphaValue = 0xFF",
+    "#if canImport(UIKit)",
+    "#elseif canImport(AppKit)",
+    "public typealias HexColor = UIColor",
+    "public typealias HexColor = NSColor",
+    "private let trimmedASCIIWhitespace: Set<UInt8> = [0x09, 0x0A, 0x0D, 0x20]",
+    "private func hexNibble(_ byte: UInt8) -> UInt8?",
+    "case 0x30...0x39:",
+    "case 0x41...0x46:",
+    "case 0x61...0x66:",
+    "public func parseHexColor(_ hex: String) -> HexColor?",
+    "var bytes = hex.utf8[...]",
+    "digitCount == 3 || digitCount == 4 || digitCount == 6 || digitCount == 8",
+    "guard let digit = hexNibble(byte)",
+    "return digits[index] * 0x11",
+    "return digits[index * 2] << 4 | digits[index * 2 + 1]",
+    "alpha: digitCount == 4 || digitCount == 8 ? component(at: 3) : 0xFF",
     "return nil",
     "return parseHexColor(hex) ?? .gray",
     '@available(*, deprecated, renamed: "toColor(_:)")',
-    "public func toColor(hex: String) -> UIColor",
+    "public func toColor(hex: String) -> HexColor",
     "return toColor(hex)",
 ], "Swift 5 parser contract is incomplete")
+require(not any(token in hex_source for token in ["Scanner", "CharacterSet", "uppercased()", "trimmingCharacters"]),
+        "parser must not normalize Unicode or delegate exact grammar to Scanner")
 require(hex_source.count("return nil") == 3,
         "all malformed parser paths must return nil from the failable API")
 require(hex_source.count("?? .gray") == 1,
@@ -206,6 +207,12 @@ for test_name in [
     "testTransparentRGBAIsValidAtBothWidths",
     "testUnicodeCaseExpansionDoesNotCreateValidHex",
     "testTrimsWhitespaceAndNewlines",
+    "testOnlyDocumentedASCIIWhitespaceIsTrimmed",
+    "testRejectsUnicodeLookalikesAndControlsBeforeParsing",
+    "testRejectsPartialOverflowAndMalformedPrefixes",
+    "testRGBAUsesTrailingAlphaByte",
+    "testAllByteValuesRoundTripThroughRGBAParser",
+    "testAcceptedPrefixWidthAndCaseMatrix",
     "testInvalidLengthReturnsGray",
     "testInvalidCharactersReturnGray",
     "testSignedHexReturnsGray",
@@ -214,7 +221,7 @@ for test_name in [
 for prefixed_alpha_input in ["0xF0A8", "0x33669980", "#0xF0A8", "#0x33669980"]:
     require(f'toColor("{prefixed_alpha_input}")' in tests,
             f"missing prefixed alpha input coverage: {prefixed_alpha_input}")
-require_all(tests, ["func assertColor(_ color: UIColor", "accuracy:"],
+require_all(tests, ["func assertColor(_ color: HexColor", "accuracy:"],
             "XCTest helpers must use current Swift assertion syntax")
 require("XCTAssertEqualWithAccuracy" not in tests,
         "Swift 2 XCTest assertion syntax must stay removed")
@@ -242,13 +249,16 @@ require(tests.count("alpha: 0.0") == 2,
 require('XCTAssertNil(parseHexColor("#ﬀ0000"))' in tests and
         'assertColor(toColor("#ﬀ0000")' in tests,
         "Unicode case-expansion input must fail explicitly and use compatibility gray")
-require(hex_source.index('CharacterSet(charactersIn: "0123456789ABCDEFabcdef")') <
-        hex_source.index("colorString = colorString.uppercased()") <
-        hex_source.index("scanner.scanHexInt64(&colorValue)"),
-        "ASCII source validation must precede case normalization and scanning")
-require('var colorString = hex.trimmingCharacters(in: .whitespacesAndNewlines)\n' in hex_source and
-        hex_source.count("uppercased()") == 1,
-        "whole-string uppercasing must occur exactly once after source validation")
+require_all(tests, [
+    '"\\u{00A0}#336699\\u{00A0}"',
+    '"#ＦＦ0000"',
+    '"#А00000"',
+    '"#FF\\u{0000}0000"',
+    '"#FFFFFFFFFFFFFFFF"',
+    'parseHexColor("#01020304")',
+    "for value in 0...255",
+    'for prefix in ["", "#", "0x", "0X", "#0x", "#0X"]',
+], "tests must exercise Unicode, control, overflow, alpha-order, and byte-range boundaries")
 
 require_all(build_script, [
     "set -eu",
@@ -275,17 +285,19 @@ require_all(package_manifest, [
     "// swift-tools-version:5.9",
     'name: "HexToColor"',
     ".iOS(.v12)",
+    ".macOS(.v10_13)",
     ".library(",
     'targets: ["HexToColor"]',
     ".target(",
     'path: "HexToColor"',
+    'exclude: ["Info.plist"]',
     'sources: ["Hex.swift"]',
     ".testTarget(",
     'dependencies: ["HexToColor"]',
     'path: "HexToColorTests"',
     'sources: ["HexToColorTests.swift"]',
     "swiftLanguageVersions: [.v5]",
-], "Package.swift must preserve the iOS 12 Swift 5 library and XCTest graph")
+], "Package.swift must preserve the iOS 12/macOS 10.13 Swift 5 library and XCTest graph")
 require_all(podspec, [
     's.platform     = :ios, "12.0"',
     's.swift_version = "5.0"',
@@ -299,9 +311,11 @@ require(workflow == EXPECTED_WORKFLOW,
 require_all(readme.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",
-    "#0x", "0xrgba", "#0xrrggbbaa", "non-hex", "signed",
+    "#0x", "rgb, rgba, rrggbb, and rrggbbaa", "non-hex", "signed",
     "parsehexcolor(_:)", "returns `nil`", "valid gray color",
     "fully transparent rgba",
+    "ascii space, tab, carriage return, and line feed", "appkit", "swift package tests",
+    "accessibility labels",
     "persist checkout credentials", "real xctest suite",
     "absolute makefile path", "any working directory",
 ], "README must document parser behavior and executable hosted verification")
@@ -311,6 +325,7 @@ require_all(vision.lower(), [
     "#0x", "0x-prefixed shorthand and rgba", "non-hex", "real xctest suite",
     "parsehexcolor(_:)", "explicit failure",
     "fully transparent rgba",
+    "ascii space, tab, carriage return, and line feed", "appkit", "swift package tests",
 ], "VISION must describe the current parser and hosted validation baseline")
 require_all(changes, [
     "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
@@ -320,14 +335,15 @@ require_all(changes, [
     "parseHexColor(_:)", "valid gray color",
     "fully transparent RGBA",
     "Make verification target", "external directories",
+    "AppKit", "Swift package tests", "Unicode whitespace",
 ], "CHANGES must record parser and current-Xcode verification work")
 require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
 require_all(readme.lower(), [
     "swift package manager",
     "0.0.1` tag predates the manifest",
-    "swift package manifest parsing",
-], "README must document SwiftPM integration and the pre-manifest release boundary")
+    "swift package tests",
+], "README must document tested SwiftPM integration and the pre-manifest release boundary")
 require_all(vision, [
     "Swift Package Manager exposes the existing source and XCTest layout",
     "Publish a future tag that includes the Swift package manifest",
@@ -463,14 +479,14 @@ require(location_independent_make_statuses == ["status: completed"] and
         all(item in location_independent_make_verification for item in location_independent_make_required_evidence) and
         re.search(r"\b(?:pending|todo|tbd|not run)\b", location_independent_make_verification, re.IGNORECASE) is None,
         "location-independent Make plan must record completed status and actual verification")
-require_all(readme.lower(), ["ascii source characters", "unicode expansion"],
-            "README must document pre-normalization ASCII validation")
-require_all(security.lower(), ["ascii hex", "unicode case normalization"],
-            "security guidance must document the normalization boundary")
-require("Validate ASCII hex source characters before Unicode case normalization" in vision and
-        "Unicode case" in changes and
-        "before Unicode case normalization" in read("AGENTS.md"),
-        "project guidance must preserve the Unicode normalization boundary")
+require_all(readme.lower(), ["utf-8 bytes", "unicode normalization", "homoglyph", "control"],
+            "README must document the exact pre-normalization grammar")
+require_all(security.lower(), ["ascii hex", "unicode normalization", "control characters"],
+            "security guidance must document the exact parser boundary")
+require("Parse only ASCII hex source bytes without Unicode case normalization" in vision and
+        "Unicode whitespace" in changes and
+        "before Unicode normalization" in read("AGENTS.md"),
+        "project guidance must preserve the exact Unicode rejection boundary")
 
 for ignore_entry in ["build/", "DerivedData/", "xcuserdata/", ".DS_Store"]:
     require(ignore_entry in gitignore, f"{ignore_entry} must stay ignored")

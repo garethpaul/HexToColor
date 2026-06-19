@@ -52,12 +52,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Current revisions that contain `Package.swift` can be added through Xcode's
   Swift Package Manager integration using this repository URL. The existing
   `0.0.1` tag predates the manifest, so select a later revision or future tag.
+  The package supports UIKit on iOS 12+ and AppKit on macOS 10.13+ through the
+  shared `HexColor` type alias.
 - Run `make test` or `./build.sh` when the required platform toolchain is
   installed. The script discovers an available iPhone simulator unless
   `IOS_DESTINATION` or `IOS_SIMULATOR_NAME` is set.
-- GitHub Actions runs `make test` on macOS, compiling the Swift 5 framework at
-  its iOS 12 deployment floor and executing the real XCTest suite. The checkout
-  step does not persist checkout credentials.
+- GitHub Actions runs `make test` on macOS, executing Swift package tests under
+  AppKit and compiling the Swift 5 framework at its iOS 12 deployment floor for
+  the real XCTest suite on an iOS simulator. The checkout step does not persist checkout credentials.
 - The obsolete Xcode 7 Travis job is retired, leaving one current hosted
   verification path.
 
@@ -65,7 +67,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make lint` or `make check` for static parser, plist, podspec,
   build-script, and Xcode project guardrails. Run `make test` or `make build`
-  for those checks plus Swift package manifest parsing when Swift is installed
+  for those checks plus Swift package tests when Swift is installed
   and the XCTest suite when Xcode is installed.
 - Xcode's test action or `xcodebuild test` with the appropriate scheme and destination
 - Use `parseHexColor(_:)` when malformed input must be distinguishable from a
@@ -73,19 +75,25 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   `toColor(_:)` API and deprecated `toColor(hex:)` call shape retain the gray
   fallback. Hosted XCTest executes the labeled path against RGBA parsing so
   compatibility is not only checked statically.
-  Surrounding whitespace is trimmed,
-  `#RGB`, `#RGBA`, `#RRGGBB`, `#RRGGBBAA`, `RRGGBB`, `0xRRGGBB`, and
-  `0xRGBA` values are supported. `#0xRRGGBB` and `#0xRRGGBBAA` are normalized
-  through the same RGB/RGBA parsing path. RGB alpha defaults to opaque, and
-  invalid hex strings fall back to `UIColor.grayColor()`. Unsupported lengths
-stay on the gray fallback path. Signed or otherwise non-hex characters are
-rejected before scanner conversion. ASCII source characters are validated
-before case normalization so Unicode expansion cannot create valid hex. Tests
-cover both `0x` and `#0x` prefixes
+  Surrounding ASCII space, tab, carriage return, and line feed are trimmed;
+  other Unicode whitespace and control characters are rejected.
+  RGB, RGBA, RRGGBB, and RRGGBBAA payloads are supported with no prefix, `#`,
+  `0x`/`0X`, or the legacy `#0x`/`#0X` prefix. Hex digits are ASCII and
+  case-insensitive. The final component is alpha for RGBA inputs; RGB alpha
+  defaults to opaque, and
+  invalid hex strings fall back to the platform gray color. Unsupported lengths
+stay on the gray fallback path. Signed, fullwidth, homoglyph, control, or
+otherwise non-hex characters are rejected directly from UTF-8 bytes before any
+Unicode normalization. The exact parser does not permit partial or overflowing
+scanner parses. Tests cover both `0x` and `#0x` prefixes
   at shorthand and full RGBA widths. Fully transparent RGBA remains a valid
   non-`nil` parse and does not take the gray compatibility fallback.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
+
+This library creates color values only. It does not create views, set
+accessibility labels, or make color-only status communication accessible;
+callers remain responsible for labels, contrast, and non-color cues.
 
 ## Configuration and Secrets
 

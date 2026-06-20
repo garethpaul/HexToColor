@@ -45,7 +45,7 @@ jobs:
 """
 EXPECTED_MAKEFILE = """.PHONY: build check lint test
 
-ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 
 lint: check
 

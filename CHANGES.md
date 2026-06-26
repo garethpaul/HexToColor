@@ -20,11 +20,16 @@ surface supports UIKit and AppKit through `HexColor`.
 - RED portable baseline — rejected the stale source comments and README overview.
 - `make check`, `make lint`, `make test`, and `make build` — passed locally;
   Swift package and Xcode execution skipped because those toolchains are absent.
-- Hosted and review evidence — pending.
+- Exact-head Check runs `28246877617` and `28246879410` — passed in 2m39s and
+  4m50s, executing the AppKit SwiftPM and UIKit XCTest surfaces.
+- CodeQL run `28246876636` — passed Actions, Python, and Swift analysis; Swift
+  completed in 17m52s.
+- Codex review helper — blocked by repeated OpenAI API HTTP 401 failures on both
+  heads; immutable exact-head manual review found no actionable findings.
 
 ### Next action
 
-- Run the canonical verification gate and open a focused documentation PR.
+- Merge PR #13 after the final evidence-only head passes hosted checks.
 
 ## 2026-06-26 03:55 UTC - P3 - parser coverage roadmap reconciliation
 

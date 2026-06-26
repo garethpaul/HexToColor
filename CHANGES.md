@@ -29,7 +29,7 @@ surface supports UIKit and AppKit through `HexColor`.
 
 ### Next action
 
-- Merge PR #13 after the final evidence-only head passes hosted checks.
+- No follow-up is required for this completed description-alignment cycle.
 
 ## 2026-06-26 03:55 UTC - P3 - parser coverage roadmap reconciliation
 

@@ -352,6 +352,11 @@ require("UIKit and AppKit library" in readme and
         "Convenience Methods for UIColor" not in readme and
         "application or Objective-C/Swift sample" not in readme,
         "README overview must describe the maintained cross-platform library")
+agents = read("AGENTS.md")
+require("UIKit and AppKit `HexColor` library" in agents and
+        "Convenience Methods for UIColor" not in agents and
+        "application or Objective-C/Swift sample" not in agents,
+        "AGENTS overview must describe the maintained cross-platform library")
 require_all(vision.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",

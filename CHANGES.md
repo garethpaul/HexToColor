@@ -10,8 +10,9 @@ surface supports UIKit and AppKit through `HexColor`.
 ### Work completed
 
 - Updated public parser comments to describe platform colors.
-- Replaced the generated sample-style README and security summaries with the
-  maintained UIKit/AppKit library scope.
+- Replaced sample-style README, security, and agent summaries with the
+  maintained UIKit/AppKit library scope while retaining the iOS-only legacy
+  release boundary.
 - Added a portable contract that rejects regression to UIKit-only wording.
 
 ### Validation

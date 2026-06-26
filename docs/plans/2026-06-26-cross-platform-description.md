@@ -18,6 +18,8 @@ legacy CocoaPods release boundary.
 
 - The portable baseline failed first on the stale UIKit-only descriptions.
 - Source and project guidance now name the shared platform surface.
+- Agent guidance distinguishes the cross-platform Swift package from the
+  iOS-only legacy Xcode and CocoaPods release surfaces.
 - `make check`, `make lint`, `make test`, and `make build` passed locally; Swift
   package and Xcode execution skipped because those toolchains are unavailable.
 - Hosted verification remains required before merge.

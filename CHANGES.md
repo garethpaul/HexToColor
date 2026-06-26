@@ -1,5 +1,31 @@
 # Changes
 
+## 2026-06-26 15:09 UTC - P3 - Align cross-platform library descriptions
+
+### Summary
+
+Corrected stale UIColor-only sample wording now that the maintained public
+surface supports UIKit and AppKit through `HexColor`.
+
+### Work completed
+
+- Updated public parser comments to describe platform colors.
+- Replaced sample-style README, security, and agent summaries with the
+  maintained UIKit/AppKit library scope while retaining the iOS-only legacy
+  release boundary.
+- Added a portable contract that rejects regression to UIKit-only wording.
+
+### Validation
+
+- RED portable baseline — rejected the stale source comments and README overview.
+- `make check`, `make lint`, `make test`, and `make build` — passed locally;
+  Swift package and Xcode execution skipped because those toolchains are absent.
+- Hosted and review evidence — pending.
+
+### Next action
+
+- Run the canonical verification gate and open a focused documentation PR.
+
 ## 2026-06-26 03:55 UTC - P3 - parser coverage roadmap reconciliation
 
 ### Summary

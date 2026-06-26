@@ -4,7 +4,7 @@
 
 The supported security scope for `HexToColor` is the current default branch, `master`. Older commits, tags, branches, forks, demos, and generated artifacts are not actively supported unless the repository explicitly marks them as maintained.
 
-Project summary: Convenience Methods for UIColor
+Project summary: UIKit and AppKit hex color parsing library
 
 ## Reporting a Vulnerability
 
@@ -24,7 +24,7 @@ Helpful reports include:
 
 ## Project Security Posture
 
-- This repository appears to be an Apple platform application or Swift sample. The active security scope is the code and documentation on the default branch.
+- The active security scope is the UIKit and AppKit library code and documentation on the default branch.
 - Review found network clients, sockets, web APIs, or service endpoints; changes in those areas should receive security-focused review before merge.
 - Review found file, document, data, or media parsing flows; changes in those areas should receive security-focused review before merge.
 - No primary dependency manifest was detected in the repository root. If dependencies are added later, include a manifest and prefer reproducible installation instructions.

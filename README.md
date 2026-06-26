@@ -5,7 +5,8 @@
 
 ## Overview
 
-`garethpaul/HexToColor` is an Apple platform application or Objective-C/Swift sample. Convenience Methods for UIColor
+`garethpaul/HexToColor` is a UIKit and AppKit library for creating platform
+colors from exact ASCII hex strings.
 
 This README is based on the checked-in source, manifests, scripts, and repository metadata on the `master` branch. The project language mix found during review was: Swift (2), C/C++ headers (1), shell (1).
 

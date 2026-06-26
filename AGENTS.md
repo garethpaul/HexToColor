@@ -2,7 +2,8 @@
 
 ## Repository purpose
 
-`garethpaul/HexToColor` is an Apple platform application or Objective-C/Swift sample. Convenience Methods for UIColor
+`garethpaul/HexToColor` is a UIKit and AppKit `HexColor` library for creating
+platform colors from exact ASCII hex strings.
 
 ## Project structure
 
@@ -43,7 +44,8 @@
 ## Safety and gotchas
 
 - No required secret or credential file was identified in the repository scan. If you add integrations later, keep secrets out of git.
-- This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
+- The Swift package supports UIKit and AppKit, while the legacy Xcode and
+  CocoaPods release surfaces remain iOS-specific.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically discovered available iPhone simulator.
 - The project and test targets use Swift 5 with an iOS 12 deployment floor; preserve the deprecated labeled `toColor(hex:)` wrapper when changing the unlabeled public API.
 - The parser accepts exact ASCII hex bytes and trims only ASCII space, tab, carriage return, and line feed; reject Unicode and control input before Unicode normalization.

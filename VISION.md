@@ -16,7 +16,7 @@ The current focus is:
 
 Priority:
 
-- Preserve the hex-to-UIColor conversion API while sharing parser behavior with AppKit
+- Preserve the hex-to-platform-color conversion API across UIKit and AppKit
 - Keep podspec and Xcode project metadata aligned
 - Maintain test coverage for valid and invalid color inputs
 - Avoid adding broader color-system behavior without a clear need

@@ -55,8 +55,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   The package supports UIKit on iOS 12+ and AppKit on macOS 10.13+ through the
   shared `HexColor` type alias.
 - Run `make test` or `./build.sh` when the required platform toolchain is
-  installed. The script discovers an available iPhone simulator unless
-  `IOS_DESTINATION` or `IOS_SIMULATOR_NAME` is set.
+  installed. The script selects an available iPhone by its unique simulator ID
+  unless `IOS_DESTINATION` or `IOS_SIMULATOR_NAME` is set.
 - GitHub Actions runs `make test` on macOS, executing Swift package tests under
   AppKit and compiling the Swift 5 framework at its iOS 12 deployment floor for
   the real XCTest suite on an iOS simulator. The checkout step does not persist checkout credentials.
@@ -114,7 +114,7 @@ callers remain responsible for labels, contrast, and non-color cues.
   release version and source tag remain at 0.0.1 until a future release.
 - This looks like an Apple platform project or sample. Xcode, Swift, CocoaPods, and deployment target versions may need to match the original project era.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically
-  discovered available iPhone simulator used by `./build.sh`.
+  selected available iPhone simulator used by `./build.sh`.
 - Every Make verification target derives the checkout root from the loaded
   Makefile, so an absolute Makefile path works from any working directory.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.

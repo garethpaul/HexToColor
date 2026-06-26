@@ -98,6 +98,7 @@ required_files = [
     "SECURITY.md",
     "VISION.md",
     "build.sh",
+    "scripts/select-ios-simulator-id.awk",
     ".github/workflows/check.yml",
     "HexToColor.podspec",
     "HexToColor.xcodeproj/project.pbxproj",
@@ -142,6 +143,7 @@ lint_plist("HexToColorTests/Info.plist")
 hex_source = read("HexToColor/Hex.swift")
 tests = read("HexToColorTests/HexToColorTests.swift")
 build_script = read("build.sh")
+simulator_selector = read("scripts/select-ios-simulator-id.awk")
 makefile = read("Makefile")
 package_manifest = read("Package.swift")
 podspec = read("HexToColor.podspec")
@@ -260,12 +262,32 @@ require_all(tests, [
     'for prefix in ["", "#", "0x", "0X", "#0x", "#0X"]',
 ], "tests must exercise Unicode, control, overflow, alpha-order, and byte-range boundaries")
 
+duplicate_name_fixture = """== Devices ==
+-- iOS 17.5 --
+    iPhone 15 (11111111-1111-1111-1111-111111111111) (Shutdown)
+-- iOS 18.5 --
+    iPhone 15 (22222222-2222-2222-2222-222222222222) (Shutdown)
+"""
+selected_simulator = subprocess.run(
+    ["awk", "-F", "[()]", "-f", str(ROOT / "scripts/select-ios-simulator-id.awk")],
+    input=duplicate_name_fixture,
+    text=True,
+    capture_output=True,
+    check=True,
+).stdout.strip()
+require(selected_simulator == "11111111-1111-1111-1111-111111111111",
+        "simulator selector must return the first available iPhone UDID")
+require_all(simulator_selector, ["iPhone", "length($2) == 36", "print $2", "exit"],
+            "simulator selector must validate and return one iPhone UDID")
+
 require_all(build_script, [
     "set -eu",
     "IOS_DESTINATION",
     "IOS_SIMULATOR_NAME",
+    "scripts/select-ios-simulator-id.awk",
     "xcrun simctl list devices available",
     "No available iPhone simulator was found.",
+    'DESTINATION="platform=iOS Simulator,id=${SIMULATOR_ID}"',
     '-destination "$DESTINATION"',
     "build test",
 ], "build.sh must discover or accept a current simulator destination")

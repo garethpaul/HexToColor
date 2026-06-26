@@ -1,5 +1,46 @@
 # Changes
 
+## 2026-06-26 01:22 UTC - P2 - unambiguous simulator discovery
+
+### Summary
+
+Automatic Xcode test discovery now selects an available iPhone by UDID instead
+of a model name that can be duplicated across installed iOS runtimes.
+
+### Work completed
+
+- Added a portable AWK selector for the first available iPhone UDID.
+- Preserved explicit `IOS_DESTINATION` and `IOS_SIMULATOR_NAME` overrides.
+- Added a duplicate-name fixture contract and updated build documentation.
+
+### Threads
+
+- None; the focused build-script change was completed directly.
+
+### Files changed
+
+- `build.sh` and `scripts/select-ios-simulator-id.awk` - select the automatic destination by ID.
+- `scripts/check-baseline.py` - execute the selector against duplicate model names.
+- `README.md`, `VISION.md`, and `docs/plans/2026-06-25-simulator-id-selection*.md` - record the behavior and design.
+
+### Validation
+
+- `make check`, `make test`, Python compilation, shell syntax, and diff checks passed locally; Swift and Xcode were unavailable and explicitly skipped.
+- Both hosted Check runs passed; SwiftPM and Xcode each executed 25 tests with zero failures.
+- Codex review could not authenticate; exact-head manual review found no actionable findings.
+
+### Bugs / findings
+
+- P2: name-only automatic destinations can be ambiguous when multiple installed runtimes contain the same iPhone model.
+
+### Blockers
+
+- No merge blocker remains. Xcode is unavailable locally, and the Codex CLI is not authenticated, so hosted tests and manual exact-head review supplied the missing evidence.
+
+### Next action
+
+- Re-run hosted checks for the evidence-only head, then squash merge if green.
+
 ## 2026-06-19
 
 - Replaced Foundation scanner and Unicode-wide trimming with an exact UTF-8

@@ -25,8 +25,9 @@ of a model name that can be duplicated across installed iOS runtimes.
 
 ### Validation
 
-- `make check` and `sh -n build.sh` passed locally.
-- Hosted SwiftPM and Xcode tests are required before merge.
+- `make check`, `make test`, Python compilation, shell syntax, and diff checks passed locally; Swift and Xcode were unavailable and explicitly skipped.
+- Both hosted Check runs passed; SwiftPM and Xcode each executed 25 tests with zero failures.
+- Codex review could not authenticate; exact-head manual review found no actionable findings.
 
 ### Bugs / findings
 
@@ -34,11 +35,11 @@ of a model name that can be duplicated across installed iOS runtimes.
 
 ### Blockers
 
-- Xcode and Apple simulators are unavailable on the local Linux host.
+- No merge blocker remains. Xcode is unavailable locally, and the Codex CLI is not authenticated, so hosted tests and manual exact-head review supplied the missing evidence.
 
 ### Next action
 
-- Run hosted macOS validation and merge only if the exact PR head is green.
+- Re-run hosted checks for the evidence-only head, then squash merge if green.
 
 ## 2026-06-19
 

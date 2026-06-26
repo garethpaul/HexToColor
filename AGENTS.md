@@ -51,6 +51,9 @@
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.
+- See `docs/plans/2026-06-25-parser-case-malformed-coverage.md` before proposing
+  new case or malformed-input tests; it records the completed matrix and the
+  remaining requirement to justify genuinely new parser behavior.
 
 ## Agent workflow
 

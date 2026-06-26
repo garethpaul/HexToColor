@@ -17,6 +17,7 @@ TRANSPARENT_ALPHA_PLAN = "docs/plans/2026-06-13-hextocolor-transparent-alpha-bou
 UNICODE_NORMALIZATION_PLAN = "docs/plans/2026-06-13-hextocolor-unicode-normalization-boundary.md"
 LOCATION_INDEPENDENT_MAKE_PLAN = "docs/plans/2026-06-13-location-independent-make.md"
 SWIFT_PACKAGE_PLAN = "docs/plans/2026-06-17-001-feat-swift-package-manager-plan.md"
+PARSER_COVERAGE_PLAN = "docs/plans/2026-06-25-parser-case-malformed-coverage.md"
 EXPECTED_WORKFLOW = """name: Check
 
 on:
@@ -128,6 +129,7 @@ required_files = [
     UNICODE_NORMALIZATION_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
     SWIFT_PACKAGE_PLAN,
+    PARSER_COVERAGE_PLAN,
 ]
 
 for required_file in required_files:
@@ -161,6 +163,7 @@ transparent_alpha_plan = read(TRANSPARENT_ALPHA_PLAN)
 unicode_normalization_plan = read(UNICODE_NORMALIZATION_PLAN)
 location_independent_make_plan = read(LOCATION_INDEPENDENT_MAKE_PLAN)
 swift_package_plan = read(SWIFT_PACKAGE_PLAN)
+parser_coverage_plan = read(PARSER_COVERAGE_PLAN)
 
 require_all(hex_source, [
     "#if canImport(UIKit)",
@@ -349,6 +352,13 @@ require_all(vision.lower(), [
     "fully transparent rgba",
     "ascii space, tab, carriage return, and line feed", "appkit", "swift package tests",
 ], "VISION must describe the current parser and hosted validation baseline")
+require("Add tests for additional case and malformed strings if supported" not in vision,
+        "VISION must not list completed case and malformed-input coverage as future work")
+require_all(vision, [
+    "Mixed-case payloads across every accepted prefix and width are covered",
+    "Malformed prefixes, partial parses, overflow, Unicode lookalikes, and controls",
+    "are rejected and locked into the static baseline contract",
+], "VISION must record completed case and malformed-input coverage")
 require_all(changes, [
     "public", "toColor(hex:)", "scanHexInt", "make lint", "make test", "make build",
     "make check", "whitespace", "0x", "shorthand", "alpha", "non-hex",
@@ -359,6 +369,10 @@ require_all(changes, [
     "Make verification target", "external directories",
     "AppKit", "Swift package tests", "Unicode whitespace",
 ], "CHANGES must record parser and current-Xcode verification work")
+require_all(changes, [
+    "Reconciled the parser roadmap with the existing mixed-case and malformed-input test matrix",
+    PARSER_COVERAGE_PLAN,
+], "CHANGES must record the completed parser-coverage roadmap item")
 require_all(security, ["Security Policy", "privately", "malformed", "parseHexColor(_:)", "reported", "valid gray color"],
             "SECURITY must retain reporting and malformed-input guidance")
 require_all(readme.lower(), [
@@ -395,10 +409,18 @@ completed_plans = [
     UNICODE_NORMALIZATION_PLAN,
     LOCATION_INDEPENDENT_MAKE_PLAN,
     SWIFT_PACKAGE_PLAN,
+    PARSER_COVERAGE_PLAN,
 ]
 for plan_path in completed_plans:
     require("status: completed" in read(plan_path),
             f"completed plan marker missing: {plan_path}")
+require_all(parser_coverage_plan, [
+    "status: completed",
+    "testAcceptedPrefixWidthAndCaseMatrix",
+    "testRejectsPartialOverflowAndMalformedPrefixes",
+    "No parser source change was required",
+    "python3 scripts/check-baseline.py",
+], "parser coverage plan must record the completed evidence and verification")
 require_all(swift5_plan, [
     "make test", "Swift 5", "iOS 12", "persisted checkout credentials",
     "simulator discovery", "git diff --check",

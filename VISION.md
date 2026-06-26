@@ -63,6 +63,10 @@ Current baseline:
   is valid.
 - Non-hex characters, including signed-looking strings, are rejected before
   scanner conversion.
+- Mixed-case payloads across every accepted prefix and width are covered by the
+  executable XCTest matrix.
+- Malformed prefixes, partial parses, overflow, Unicode lookalikes, and controls
+  are rejected and locked into the static baseline contract.
 - `build.sh` discovers an available iPhone simulator and supports explicit
   destination overrides for current Xcode tests.
 - Static checks validate plists, podspec HTTPS metadata, and generated Xcode artifact ignores.
@@ -72,7 +76,6 @@ Current baseline:
 Next priorities:
 
 - Align CocoaPods release metadata with the modernized source in a future tag
-- Add tests for additional case and malformed strings if supported
 - Publish a future tag that includes the Swift package manifest
 
 Contribution rules:

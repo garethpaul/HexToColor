@@ -28,6 +28,8 @@ Current baseline:
 - GitHub Actions runs the parser/source baseline and real XCTest suite on macOS
   through `make test`; simulator selection remains configurable through
   `build.sh`.
+- Automatic XCTest destination discovery uses a simulator UDID so duplicate
+  device names across installed iOS runtimes remain unambiguous.
 - Framework and test targets use Swift 5 with an iOS 12 deployment floor.
 - CocoaPods compatibility metadata matches Swift 5 and iOS 12 while release
   versioning remains unchanged until a future tag.

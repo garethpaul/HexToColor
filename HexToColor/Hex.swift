@@ -54,7 +54,7 @@ private func makeColor(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) -> H
 #endif
 }
 
-// Parses a hex string into a UIColor.
+// Parses a hex string into a platform color.
 //
 public func parseHexColor(_ hex: String) -> HexColor? {
     var bytes = hex.utf8[...]
@@ -107,7 +107,7 @@ public func parseHexColor(_ hex: String) -> HexColor? {
     )
 }
 
-// Converts a hex string into a UIColor, falling back to gray for compatibility.
+// Converts a hex string into a platform color, falling back to gray for compatibility.
 //
 public func toColor(_ hex: String) -> HexColor {
     return parseHexColor(hex) ?? .gray

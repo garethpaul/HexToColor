@@ -194,6 +194,10 @@ require(hex_source.count("return nil") == 3,
         "all malformed parser paths must return nil from the failable API")
 require(hex_source.count("?? .gray") == 1,
         "only the compatibility API may apply the gray fallback")
+require_all(hex_source, [
+    "// Parses a hex string into a platform color.",
+    "// Converts a hex string into a platform color, falling back to gray for compatibility.",
+], "public parser comments must describe the shared UIKit and AppKit color surface")
 
 for test_name in [
     "testWhite",
@@ -344,6 +348,10 @@ require_all(readme.lower(), [
     "persist checkout credentials", "real xctest suite",
     "absolute makefile path", "any working directory",
 ], "README must document parser behavior and executable hosted verification")
+require("UIKit and AppKit library" in readme and
+        "Convenience Methods for UIColor" not in readme and
+        "application or Objective-C/Swift sample" not in readme,
+        "README overview must describe the maintained cross-platform library")
 require_all(vision.lower(), [
     "make lint", "make test", "make build", "make check", "swift 5", "ios 12",
     "invalid hex", "whitespace", "0x", "shorthand", "alpha", "unsupported lengths",

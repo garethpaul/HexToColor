@@ -87,7 +87,12 @@ otherwise non-hex characters are rejected directly from UTF-8 bytes before any
 Unicode normalization. The exact parser does not permit partial or overflowing
 scanner parses. Tests cover both `0x` and `#0x` prefixes
   at shorthand and full RGBA widths. Fully transparent RGBA remains a valid
-  non-`nil` parse and does not take the gray compatibility fallback.
+  non-`nil` parse and does not take the gray compatibility fallback. The
+  accepted-prefix matrix also covers mixed-case payloads at every supported
+  width, while focused malformed-input tests cover partial parses, overflow,
+  incompatible or repeated prefixes, Unicode lookalikes, and controls. See
+  [`docs/plans/2026-06-25-parser-case-malformed-coverage.md`](docs/plans/2026-06-25-parser-case-malformed-coverage.md)
+  for the completed roadmap evidence.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

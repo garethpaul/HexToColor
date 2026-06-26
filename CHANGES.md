@@ -1,5 +1,50 @@
 # Changes
 
+## 2026-06-26 03:55 UTC - P3 - parser coverage roadmap reconciliation
+
+### Summary
+
+Reconciled the parser roadmap with the existing mixed-case and malformed-input test matrix.
+
+### Work completed
+
+- Confirmed the accepted-prefix matrix already covers mixed-case payloads at
+  every supported width.
+- Confirmed focused tests already reject malformed prefixes, partial parses,
+  overflow, Unicode lookalikes, controls, signed-looking input, and invalid lengths.
+- Removed the completed testing item from future priorities and added a static
+  contract that prevents it from returning as stale roadmap work.
+
+### Threads
+
+- None; this was a focused evidence and documentation reconciliation.
+
+### Files changed
+
+- `scripts/check-baseline.py` - enforce the completed roadmap state.
+- `README.md`, `VISION.md`, and `AGENTS.md` - synchronize user, roadmap, and contributor guidance.
+- `docs/plans/2026-06-25-parser-case-malformed-coverage.md` - record the audit and evidence.
+
+### Validation
+
+- The new contract failed before the completion record existed, then all four
+  Make gates, Python compilation, and diff checks passed after synchronization;
+  Swift and Xcode were unavailable and explicitly skipped.
+- Two isolated hostile mutations proved the checker rejects both the stale
+  roadmap item and removal of the named coverage evidence.
+
+### Bugs / findings
+
+- P3: the roadmap still requested case and malformed-input tests that were already present and guarded.
+
+### Blockers
+
+- None.
+
+### Next action
+
+- Keep future parser work limited to a demonstrated behavior gap rather than duplicating this matrix.
+
 ## 2026-06-26 01:22 UTC - P2 - unambiguous simulator discovery
 
 ### Summary

@@ -122,7 +122,8 @@ callers remain responsible for labels, contrast, and non-color cues.
 - Set `IOS_SIMULATOR_NAME` or `IOS_DESTINATION` to override the automatically
   selected available iPhone simulator used by `./build.sh`.
 - Every Make verification target derives the checkout root from the loaded
-  Makefile, so an absolute Makefile path works from any working directory.
+  Makefile, so an absolute Makefile path works from any working directory,
+  including checkout paths containing spaces.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.

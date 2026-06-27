@@ -1,5 +1,9 @@
 # Changes
 
+## 2026-06-27
+
+- Preserved absolute Makefile roots containing spaces and added a recursive-safe full-baseline regression.
+
 ## 2026-06-26 15:09 UTC - P3 - Align cross-platform library descriptions
 
 ### Summary

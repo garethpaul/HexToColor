@@ -13,7 +13,10 @@
 - The focused recursive authority regression, direct baseline, Python
   compilation, all four root Make aliases, external-directory `make check`,
   and `git diff --check` pass under local GNU Make 4.3. Swift and Xcode are
-  unavailable locally and remain hosted validation requirements.
+  unavailable locally and remain hosted validation requirements. Required
+  `codex review --base origin/master` was attempted on implementation head
+  `c6dc0ef` but failed before analysis with OpenAI HTTP 401 authentication
+  errors; immutable final-head review remains required.
 
 ## 2026-06-27
 

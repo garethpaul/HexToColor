@@ -44,20 +44,40 @@ jobs:
       - name: Run parser and XCTest baseline
         run: make test
 """
-EXPECTED_MAKEFILE = """.PHONY: build check lint test
+EXPECTED_MAKEFILE = """.PHONY: __repository-make-authority build check lint test
+.SECONDEXPANSION:
 
-override ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+ifneq ($(strip $(MAKEFILES)),)
+$(error MAKEFILES must be empty; repository verification requires this Makefile to be loaded alone)
+endif
+override MAKEFILES :=
+ifneq ($(origin MAKEFILE_LIST),file)
+$(error MAKEFILE_LIST must not be overridden)
+endif
+override ROOT := $(shell sed_path=/usr/bin/sed; [ -x "$$sed_path" ] || sed_path=/bin/sed; [ -x "$$sed_path" ] || exit 1; path=$$(printf '%s' '$(subst ','"'"',$(value MAKEFILE_LIST))' | "$$sed_path" 's/^ //'); [ -f "$$path" ] || exit 1; directory=$${path%/*}; [ "$$directory" != "$$path" ] || directory=.; CDPATH= cd -- "$$directory" && /bin/pwd -P)
+export ROOT
+ifeq ($(strip $(ROOT)),)
+$(error repository Makefile must be loaded alone)
+endif
 
-lint: check
+build check lint test:: $$(if $$(filter file,$$(origin MAKEFILE_LIST)),,$$(error MAKEFILE_LIST must not be overridden))
+build check lint test:: $$(if $$(shell sed_path=/usr/bin/sed && [ -x "$$$$sed_path" ] || sed_path=/bin/sed && [ -x "$$$$sed_path" ] && path=$$$$(printf '%s' '$$(subst ','"'"',$$(MAKEFILE_LIST))' | "$$$$sed_path" 's/^ //') && [ -f "$$$$path" ] && printf '%s' ok),,$$(error repository Makefile must be loaded alone))
+build check lint test:: __repository-make-authority
 
-test: check
-\t@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift test; else printf '%s\\n' "Skipping Swift package tests: swift is not installed."; fi
-\t@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
+__repository-make-authority::
+	@:
 
-build: test
+lint:: check
 
-check:
-\t@python3 "$(ROOT)/scripts/check-baseline.py"
+test:: check
+	@if command -v swift >/dev/null 2>&1; then cd "$(ROOT)" && swift test; else printf '%s\\n' "Skipping Swift package tests: swift is not installed."; fi
+	@if command -v xcodebuild >/dev/null 2>&1; then cd "$(ROOT)" && ./build.sh; else printf '%s\\n' "Skipping XCTest: xcodebuild is not installed."; fi
+
+build:: test
+
+check::
+	@python3 "$(ROOT)/scripts/check-baseline.py"
+	@python3 "$(ROOT)/scripts/test-make-spaced-path.py"
 """
 
 
@@ -100,6 +120,7 @@ required_files = [
     "VISION.md",
     "build.sh",
     "scripts/select-ios-simulator-id.awk",
+    "scripts/test-make-spaced-path.py",
     ".github/workflows/check.yml",
     "HexToColor.podspec",
     "HexToColor.xcodeproj/project.pbxproj",

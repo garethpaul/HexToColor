@@ -18,6 +18,8 @@ platform colors from exact ASCII hex strings.
 
 - Install dependencies: no repository-specific install command is documented.
 - Full baseline: `make check`
+- Make gates support absolute checkout paths containing spaces; preserve the
+  validated single-Makefile root derivation and recursive authority regression.
 - Hosted/local XCTest gate: `make test`
 - Build alias: `make build`
 - Local Apple development: `open HexToColor.xcodeproj`

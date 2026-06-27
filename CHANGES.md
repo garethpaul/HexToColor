@@ -1,5 +1,27 @@
 # Changes
 
+## 2026-06-26 18:46 PDT — P1 verification root authority
+
+- Reproduced that the spaced-path sentinel parser collapsed `MAKEFILES` path
+  separators into one false `ROOT`, bypassing the intended repository location.
+- Replaced sentinel parsing with a quoted, validated single-Makefile resolver
+  and target-time authority checks that reject preloads, metadata overrides,
+  and additional Makefiles loaded before or after the repository Makefile.
+- Extended the recursive spaced-path regression to require all three authority
+  failures while preserving the supported absolute path with spaces.
+- Updated the exact baseline contract and synchronized Make guidance.
+- The focused recursive authority regression, direct baseline, Python
+  compilation, all four root Make aliases, external-directory `make check`,
+  and `git diff --check` pass under local GNU Make 4.3. Swift and Xcode are
+  unavailable locally and remain hosted validation requirements. Required
+  `codex review --base origin/master` was attempted on implementation head
+  `c6dc0ef` but failed before analysis with OpenAI HTTP 401 authentication
+  errors; immutable final-head review remains required.
+
+## 2026-06-27
+
+- Preserved absolute Makefile roots containing spaces and added a recursive-safe full-baseline regression.
+
 ## 2026-06-26 15:09 UTC - P3 - Align cross-platform library descriptions
 
 ### Summary

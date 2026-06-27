@@ -123,7 +123,9 @@ callers remain responsible for labels, contrast, and non-color cues.
   selected available iPhone simulator used by `./build.sh`.
 - Every Make verification target derives the checkout root from the loaded
   Makefile, so an absolute Makefile path works from any working directory,
-  including checkout paths containing spaces.
+  including checkout paths containing spaces. Exactly one repository Makefile
+  is supported; preloaded or multiple Makefiles fail closed instead of changing
+  the verification root.
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `docs/plans/2026-06-08-hextocolor-whitespace-baseline.md` for the current whitespace parsing guardrail.
